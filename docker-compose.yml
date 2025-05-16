@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: gsg              # 생성할 기본 데이터베이스
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:root_password}   # 루트 비밀번호 설정
+      MYSQL_USER: ${DB_USERNAME:root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql        # 데이터 영속화
+    networks:
+      - backend
+
+  redis:
+    image: redis:7.0
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data                # Redis 데이터 저장
+    networks:
+      - backend
+
+volumes:
+  mysql_data:
+  redis_data:
+
+networks:
+  backend:
+    driver: bridge  # 기본 브릿지 네트워크

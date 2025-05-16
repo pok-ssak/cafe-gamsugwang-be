@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: "gsg"
+  profiles:
+    active: dev

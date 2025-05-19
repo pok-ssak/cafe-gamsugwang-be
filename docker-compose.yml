@@ -1,24 +1,34 @@
-version: '3.8'
+#version: '3.8'
 
 services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.10.0
+    container_name: es
+    ports:
+      - "9200:9200"
+    mem_limit: 6g
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - xpack.security.http.ssl.enabled=false
+    networks:
+      - gsg
+
   mysql:
-    image: mysql:8.0
+    image: mysql:latest
     container_name: mysql
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: gsg              # 생성할 기본 데이터베이스
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:root_password}   # 루트 비밀번호 설정
-      MYSQL_USER: ${DB_USERNAME:root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:root}
+      MYSQL_ROOT_PASSWORD: root
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql        # 데이터 영속화
     networks:
-      - backend
-
+      - gsg
   redis:
-    image: redis:7.0
+    image: redis:latest
     container_name: redis
     restart: unless-stopped
     ports:
@@ -26,12 +36,14 @@ services:
     volumes:
       - redis_data:/data                # Redis 데이터 저장
     networks:
-      - backend
+      - gsg
+
+
 
 volumes:
   mysql_data:
   redis_data:
 
 networks:
-  backend:
+  gsg:
     driver: bridge  # 기본 브릿지 네트워크

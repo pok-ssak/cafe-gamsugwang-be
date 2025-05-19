@@ -1,5 +1,5 @@
 ---
-name: chore
+name: Chore
 about: 문서작업, 의존성관리
 title: "[CHORE]"
 labels: ''

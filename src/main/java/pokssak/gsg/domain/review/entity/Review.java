@@ -3,6 +3,7 @@ package pokssak.gsg.domain.review.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import pokssak.gsg.common.entity.BaseEntity;
+import pokssak.gsg.domain.user.entity.User;
 
 @Table(name = "reviews")
 @Builder
@@ -15,4 +16,17 @@ public class Review extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Builder.Default
+    private int rate = 0;
+
+    private String title;
+
+    private String content;
+
+    @Builder.Default
+    private String imageUrl = "";
+
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 }

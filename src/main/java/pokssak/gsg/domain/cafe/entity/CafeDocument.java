@@ -19,16 +19,27 @@ public class CafeDocument {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Field(type = FieldType.Text,
-    analyzer = "edge_ngram_analyzer",
-    searchAnalyzer = "standard_search")
+    @MultiField(
+            mainField = @Field(
+                    type          = FieldType.Text,
+                    analyzer      = "edge_ngram_analyzer",
+                    searchAnalyzer= "standard_search"
+            ),
+            otherFields = {
+                    @InnerField(
+                            suffix = "keyword",
+                            type   = FieldType.Keyword,
+                            ignoreAbove = 256
+                    )
+            }
+    )
     private String title;
 
     @Field(type = FieldType.Text)
     private String info;
 
     @Field(type = FieldType.Double)
-    private double rate;
+    private Double rate;
 
     @Field(type = FieldType.Date, format = {}, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
     private String createdAt;
@@ -60,7 +71,7 @@ public class CafeDocument {
         @Field(type = FieldType.Text)
         private String street;
         @Field(type = FieldType.Keyword)
-        private int zipCode;
+        private Integer zipCode;
         @GeoPointField
         private GeoPoint location;
     }
@@ -71,6 +82,6 @@ public class CafeDocument {
         @Field(type = FieldType.Text)
         private String key;
         @Field(type = FieldType.Integer)
-        private int count;
+        private Integer count;
     }
 }

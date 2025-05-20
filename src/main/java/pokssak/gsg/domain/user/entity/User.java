@@ -1,6 +1,7 @@
 package pokssak.gsg.domain.user.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -40,6 +41,6 @@ public class User extends BaseEntity {
     @OneToMany
     private List<Review> reviews;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private JoinType joinType;
 }

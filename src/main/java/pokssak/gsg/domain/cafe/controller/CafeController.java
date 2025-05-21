@@ -23,12 +23,10 @@ public class CafeController {
     @GetMapping("/auto-complete")
     public ResponseEntity<?> autoComplete(@RequestParam String keyword, @RequestParam(required = false, defaultValue = "10") int limit) {
         List<String> titles = cafeService.autoComplete(keyword, limit);
+        ApiResponse.ok(titles);
 
-        ApiResponse<Object> response = ApiResponse.builder()
-                .success(true)
-                .data(titles)
-                .build();
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(titles);
     }
+
+
 }

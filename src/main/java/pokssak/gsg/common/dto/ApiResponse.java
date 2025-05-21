@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import pokssak.gsg.common.exception.ErrorResponse;
 
-@Builder
 public record ApiResponse<T>(
     boolean success,
     @JsonInclude(JsonInclude.Include.NON_NULL)

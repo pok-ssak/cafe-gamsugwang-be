@@ -1,6 +1,7 @@
 package pokssak.gsg.common.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Builder;
 import pokssak.gsg.common.exception.ErrorResponse;
 
 public record ApiResponse<T>(

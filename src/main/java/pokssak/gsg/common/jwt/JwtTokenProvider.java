@@ -26,8 +26,8 @@ public class JwtTokenProvider {
     private final Key key;
     private final UserDetailsService userDetailsService;
 
-    public JwtTokenProvider(@Value("${security.jwt.secret}") String secretKey,
-                            @Value("${security.jwt.expire-seconds}") long tokenExpireSeconds,
+    public JwtTokenProvider(@Value("${jwt.secret}") String secretKey,
+                            @Value("${jwt.token-expire-seconds}") long tokenExpireSeconds,
                             UserDetailsService userDetailsService) {
         this.tokenExpireSeconds = tokenExpireSeconds;
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
@@ -59,7 +59,7 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String accessToken) {
         String email = getClaims(accessToken).getSubject();
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-        return new UsernamePasswordAuthenticationToken(userDetails, "");
+        return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 
     public Claims getClaims(String token) {

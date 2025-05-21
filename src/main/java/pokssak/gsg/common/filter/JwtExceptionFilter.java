@@ -16,7 +16,6 @@ import pokssak.gsg.common.exception.ErrorResponse;
 @RequiredArgsConstructor
 public class JwtExceptionFilter extends OncePerRequestFilter {
 
-    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -39,7 +38,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(errorCode.getHttpStatus().value());
-        response.getWriter().write(objectMapper.writeValueAsString(ApiResponse.fail(errorResponse)));
+        response.getWriter().write(new ObjectMapper().writeValueAsString(ApiResponse.fail(errorResponse)));
         response.getWriter().flush();
         response.getWriter().close();
     }

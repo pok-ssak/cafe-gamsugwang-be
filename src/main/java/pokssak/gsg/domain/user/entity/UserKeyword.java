@@ -3,6 +3,7 @@ package pokssak.gsg.domain.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import pokssak.gsg.common.entity.BaseEntity;
+import pokssak.gsg.common.vo.Keyword;
 
 @Table(name = "user_keywords")
 @Builder
@@ -18,4 +19,7 @@ public class UserKeyword extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+
+    @Embedded
+    private Keyword keyword;
 }

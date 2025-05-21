@@ -20,7 +20,7 @@ import pokssak.gsg.domain.user.repository.UserRepository;
 public class UserService{
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+//    private final PasswordEncoder passwordEncoder;
     private final UserKeywordService userKeywordService;
 
     // 회원가입
@@ -35,7 +35,7 @@ public class UserService{
         User user = User.builder()
                 .nickName(request.nickName())
                 .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
+                .password(request.password())
                 .imageUrl(request.imageUrl())
                 .joinType(request.joinType())
                 .build();

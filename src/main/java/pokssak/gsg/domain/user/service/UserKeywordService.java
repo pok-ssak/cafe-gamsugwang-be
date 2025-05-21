@@ -1,5 +1,8 @@
 package pokssak.gsg.domain.user.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.common.vo.Keyword;
@@ -13,10 +16,13 @@ import pokssak.gsg.domain.user.repository.UserRepository;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
+@Service
+@RequiredArgsConstructor
 public class UserKeywordService {
 
-    private static UserRepository userRepository;
-    private static UserKeywordRepository userKeywordRepository;
+    private final UserRepository userRepository;
+    private final UserKeywordRepository userKeywordRepository;
 
     // 키워드 조회
     @Transactional(readOnly = true)

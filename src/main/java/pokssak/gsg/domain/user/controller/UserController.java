@@ -39,21 +39,21 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // 프로필 조회
-    @GetMapping("/users/profile")
-    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        UserProfileResponse profile = userService.getProfile(userDetails.getUser());
-        return ResponseEntity.ok(profile);
-    }
-
-    // 프로필 수정
-    @PatchMapping("/users/profile")
-    public ResponseEntity<Void> updateProfile(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody UserProfileUpdateRequest request) {
-        userService.updateProfile(userDetails.getUser(), request);
-        return ResponseEntity.noContent().build();
-    }
+//    // 프로필 조회
+//    @GetMapping("/users/profile")
+//    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
+//        UserProfileResponse profile = userService.getProfile(userDetails.getUser());
+//        return ResponseEntity.ok(profile);
+//    }
+//
+//    // 프로필 수정
+//    @PatchMapping("/users/profile")
+//    public ResponseEntity<Void> updateProfile(
+//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @RequestBody UserProfileUpdateRequest request) {
+//        userService.updateProfile(userDetails.getUser(), request);
+//        return ResponseEntity.noContent().build();
+//    }
 
 
 }

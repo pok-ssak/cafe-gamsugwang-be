@@ -7,7 +7,9 @@ import pokssak.gsg.common.exception.ErrorCode;
 @AllArgsConstructor
 public enum UserErrorCode implements ErrorCode {
 
-    NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 계정입니다.");
+    NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 계정입니다."),
+    USER_EMAIL_ALREADY_EXIST(HttpStatus.BAD_REQUEST, "이미 존재하는 이메일입니다."),
+    ALREADY_ACTIVE(HttpStatus.BAD_REQUEST, "이미 복구된 계정입니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

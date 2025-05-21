@@ -69,6 +69,25 @@ class UserKeywordServiceTest {
     }
 
     @Test
+    @DisplayName("사용자 키워드 생성 - 성공")
+    void addUserKeywords_success() {
+        // given
+        List<Keyword> newKeywords = List.of(
+                new Keyword("조용한", 0),
+                new Keyword("24시간", 0)
+        );
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
+
+        // when
+        userKeywordService.addUserKeywords(1L, newKeywords);
+
+        // then
+        verify(userRepository).findById(1L);
+        verify(userKeywordRepository).saveAll(anyList());
+    }
+
+    @Test
     @DisplayName("사용자 키워드 수정 - 성공")
     void updateUserKeywords_success() {
         // given

@@ -21,6 +21,7 @@ public class UserService{
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserKeywordService userKeywordService;
 
     // 회원가입
     public UserResponse register(UserRegisterRequest request) {
@@ -39,10 +40,12 @@ public class UserService{
                 .joinType(request.joinType())
                 .build();
 
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        log.info("회원가입 성공 - userId={}, email={}", user.getId(), user.getEmail());
-        return UserResponse.from(user);
+        userKeywordService.addUserKeywords(savedUser.getId(), request.keywords());
+
+        log.info("회원가입 성공 - userId={}, email={}", savedUser.getId(), savedUser.getEmail());
+        return UserResponse.from(savedUser);
     }
 
     // 회원탈퇴

@@ -33,6 +33,23 @@ public class UserKeywordService {
                 .toList();
     }
 
+    // 회원가입 시 키워드 생성
+    @Transactional
+    public void addUserKeywords(Long userId, List<Keyword> keywords) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
+
+        // 새 키워드 추가
+        List<UserKeyword> newUserKeywords = keywords.stream()
+                .map(keyword -> UserKeyword.builder()
+                        .user(user)
+                        .keyword(keyword)
+                        .build())
+                .collect(Collectors.toList());
+
+        userKeywordRepository.saveAll(newUserKeywords);
+    }
+
     // 키워드 수정
     @Transactional
     public void updateUserKeywords(Long userId, List<Keyword> keywords) {

@@ -14,7 +14,7 @@ public record UserResponse(
         String password,
         String imageUrl,
         JoinType joinType,
-        List<Long> keywordIds
+        List<UserKeyword> userKeywords
 ) {
     public static UserResponse from(User user) {
         return UserResponse.builder()
@@ -22,9 +22,7 @@ public record UserResponse(
                 .email(user.getEmail())
                 .imageUrl(user.getImageUrl())
                 .joinType(user.getJoinType())
-                .keywordIds(user.getUserKeywords().stream()
-                        .map(UserKeyword::getId)
-                        .toList())
+                .userKeywords(user.getUserKeywords())
                 .build();
     }
 }

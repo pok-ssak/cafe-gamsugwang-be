@@ -31,7 +31,7 @@ jobs:
         uses: jaracogmbh/docker-compose-health-check-action@v1.0.0
         with:
           max-retries: 30
-          retry-interval: 10
+          retry-interval: 5
           compose-file: "docker-compose.yml"
           skip-exited: "true"
           skip-no-healthcheck: "true"

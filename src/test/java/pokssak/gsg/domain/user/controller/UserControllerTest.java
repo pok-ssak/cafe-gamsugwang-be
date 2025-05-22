@@ -11,9 +11,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import pokssak.gsg.common.s3.S3Uploader;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
 import pokssak.gsg.domain.user.dto.UserResponse;
 import pokssak.gsg.domain.user.entity.JoinType;
@@ -33,6 +35,9 @@ class UserControllerTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private S3Uploader s3Uploader;
+
     @InjectMocks
     private UserController userController;
 
@@ -48,14 +53,32 @@ class UserControllerTest {
     @Test
     @DisplayName("회원가입 성공")
     void register_success() throws Exception {
-        UserRegisterRequest request = UserRegisterRequest.builder()
-                .nickName("testuser")
-                .email("test@example.com")
-                .password("plaintext")
-                .imageUrl("http://image.com/profile.jpg")
-                .joinType(JoinType.LOCAL)
-                .keywords(List.of())
-                .build();
+        // JSON 문자열로 보낼 UserRegisterRequest 일부 필드들
+        String jsonRequest = objectMapper.writeValueAsString(
+                UserRegisterRequest.builder()
+                        .nickName("testuser")
+                        .email("test@example.com")
+                        .password("plaintext")
+                        .joinType(JoinType.LOCAL)
+                        .keywords(List.of()) // 필요한 키워드 리스트
+                        .build()
+        );
+
+        // MultipartFile 모킹 (프로필 이미지)
+        MockMultipartFile imageFile = new MockMultipartFile(
+                "image",                            // form-data 이름
+                "profile.jpg",                     // 파일명
+                "image/jpeg",                      // Content-Type
+                "fake-image-content".getBytes()    // 파일 내용 (테스트용 더미 바이트)
+        );
+
+        // request 필드를 JSON 문자열 형태로 보내기 위한 MockMultipartFile
+        MockMultipartFile requestPart = new MockMultipartFile(
+                "request",                        // form-data 이름 (컨트롤러에서 @RequestPart("request")로 받을 때 이름 맞춰야 함)
+                "",                              // 파일명 없어도 됨
+                "application/json",              // Content-Type
+                jsonRequest.getBytes()           // JSON 바이트
+        );
 
         UserResponse response = UserResponse.builder()
                 .nickName("testuser")
@@ -64,9 +87,10 @@ class UserControllerTest {
 
         when(userService.register(any(UserRegisterRequest.class))).thenReturn(response);
 
-        mockMvc.perform(post("/api/v1/register")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+        mockMvc.perform(multipart("/api/v1/register")
+                        .file(requestPart)
+                        .file(imageFile)
+                        .contentType(MediaType.MULTIPART_FORM_DATA))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nickName").value("testuser"))
                 .andExpect(jsonPath("$.email").value("test@example.com"));

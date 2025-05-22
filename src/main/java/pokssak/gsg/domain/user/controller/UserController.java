@@ -1,9 +1,12 @@
 package pokssak.gsg.domain.user.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import pokssak.gsg.common.s3.S3Uploader;
 import pokssak.gsg.domain.user.dto.UserProfileResponse;
 import pokssak.gsg.domain.user.dto.UserProfileUpdateRequest;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
@@ -17,13 +20,35 @@ import pokssak.gsg.domain.user.service.UserService;
 public class UserController {
 
     private final UserService userService;
+    private final S3Uploader s3Uploader;
 
     // 회원가입
-    @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody UserRegisterRequest request) {
-        UserResponse response = userService.register(request);
+    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<UserResponse> register(
+            @RequestPart("request") UserRegisterRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile image
+    ) {
+        String imageUrl = null;
+
+        // 이미지가 있는 경우 S3에 업로드
+        if (image != null && !image.isEmpty()) {
+            imageUrl = s3Uploader.upload(image);
+        }
+
+        // imageUrl을 포함한 새로운 request 생성
+        UserRegisterRequest updatedRequest = UserRegisterRequest.builder()
+                .nickName(request.nickName())
+                .email(request.email())
+                .password(request.password())
+                .joinType(request.joinType())
+                .keywords(request.keywords())
+                .imageUrl(imageUrl != null ? imageUrl : "")
+                .build();
+
+        UserResponse response = userService.register(updatedRequest);
         return ResponseEntity.ok(response);
     }
+
 
     // 회원탈퇴 (soft delete)
     @DeleteMapping("/users/{userId}")

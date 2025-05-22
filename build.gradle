@@ -74,7 +74,7 @@ jacocoTestReport {
         html.required = true
         xml.required = true
     }
-//    excludedClassFilesForReport(classDirectories)
+    excludedClassFilesForReport(classDirectories)
 }
 
 

@@ -68,7 +68,7 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
-    // executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
+     executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
 
     reports {
         html.required = true

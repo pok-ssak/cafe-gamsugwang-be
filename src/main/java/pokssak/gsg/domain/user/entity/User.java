@@ -60,8 +60,8 @@ public class User extends BaseEntity {
     @Override
     public String getUsername() {
         return email;
+    }
       
-
     public void updateProfile(String nickName, String imageUrl) {
         this.nickName = nickName;
         this.imageUrl = imageUrl;

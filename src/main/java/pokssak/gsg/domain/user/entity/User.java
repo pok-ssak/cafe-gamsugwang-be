@@ -46,12 +46,6 @@ public class User extends BaseEntity implements UserDetails{
 
     private boolean isDeleted = false;
 
-    public void validatePassword(String password) {
-        if (!password.equals(this.password)) {
-            throw new CustomException(UserErrorCode.INCORRECT_PASSWORD);
-        }
-    }
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of();

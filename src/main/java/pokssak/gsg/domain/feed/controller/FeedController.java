@@ -2,10 +2,12 @@ package pokssak.gsg.domain.feed.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.domain.feed.dto.FeedRequest;
 import pokssak.gsg.domain.feed.dto.FeedResponse;
+import pokssak.gsg.domain.feed.dto.PageRequestDto;
 import pokssak.gsg.domain.feed.service.FeedService;
 
 @RestController
@@ -29,9 +31,12 @@ public class FeedController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
-        Page<FeedResponse> feeds = feedService.getUserFeeds(userId, page, size);
+        PageRequestDto pageRequestDto = new PageRequestDto(page, size);
+        Pageable pageable = pageRequestDto.toPageable();
+        Page<FeedResponse> feeds = feedService.getUserFeeds(userId, pageable);
         return ResponseEntity.ok(feeds);
     }
+
 
     // 피드 읽음 처리
     @PutMapping("/{feedId}/read")

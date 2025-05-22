@@ -3,6 +3,7 @@ package pokssak.gsg.domain.feed.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,9 +40,8 @@ public class FeedService {
         feedRepository.save(feed);
     }
 
-    public Page<FeedResponse> getUserFeeds(Long userId, int page, int size) {
-        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return feedRepository.findByUserId(userId, pageRequest)
+    public Page<FeedResponse> getUserFeeds(Long userId, Pageable pageable) {
+        return feedRepository.findByUserId(userId, pageable)
                 .map(FeedResponse::from);
     }
 

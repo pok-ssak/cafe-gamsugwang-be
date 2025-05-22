@@ -48,9 +48,9 @@ public class FeedService {
 
     @Transactional
     public void markAsRead(Long feedId) {
-        if (!feedRepository.existsById(feedId)) {
-            throw new CustomException(FeedErrorCode.FEED_NOT_FOUND);
-        }
+        feedRepository.findById(feedId)
+                .orElseThrow(() -> new CustomException(FeedErrorCode.FEED_NOT_FOUND));
+
         feedRepository.markAsReadById(feedId);
     }
 

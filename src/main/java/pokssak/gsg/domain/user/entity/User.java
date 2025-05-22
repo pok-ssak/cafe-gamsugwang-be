@@ -1,6 +1,6 @@
 package pokssak.gsg.domain.user.entity;
 
-
+import java.util.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import jakarta.persistence.*;

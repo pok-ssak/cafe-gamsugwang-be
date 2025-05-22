@@ -5,8 +5,6 @@ import lombok.*;
 import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.domain.user.entity.User;
 
-import java.time.LocalDateTime;
-
 @Table(name = "feeds")
 @Builder
 @Getter
@@ -29,6 +27,7 @@ public class Feed extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private FeedType type;
 
+    @Builder.Default
     private boolean isRead = false;
 
     public void markAsRead() {

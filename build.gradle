@@ -68,14 +68,15 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
-     executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
+//     executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
 
     reports {
         html.required = true
         xml.required = true
     }
-    excludedClassFilesForReport(classDirectories)
+//    excludedClassFilesForReport(classDirectories)
 }
+
 
 private excludedClassFilesForReport(classDirectories) {
     classDirectories.setFrom(
@@ -83,7 +84,6 @@ private excludedClassFilesForReport(classDirectories) {
                 fileTree(dir: it, exclude: [
                         "**/common/**",
                         "**/dto/**",
-                        "**/*domain*/**",
                         "**/*Application*",
                         "**/controller/**",
                         "**/exception/**",

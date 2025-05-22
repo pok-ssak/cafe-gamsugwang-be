@@ -38,6 +38,7 @@ public class User extends BaseEntity {
     @Enumerated
     private JoinType joinType;
 
+    @Builder.Default
     private boolean isDeleted = false;
 
     public void updateProfile(String nickName, String imageUrl) {

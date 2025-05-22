@@ -45,6 +45,11 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
+    // jwt
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
+
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
@@ -61,6 +66,10 @@ dependencies {
 
     // ai
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    // aws
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.767'
 }
 
 dependencyManagement {
@@ -75,7 +84,7 @@ tasks.named('test') {
 }
 
 jacocoTestReport {
-    // executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
+//     executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
 
     reports {
         html.required = true
@@ -84,13 +93,13 @@ jacocoTestReport {
     excludedClassFilesForReport(classDirectories)
 }
 
+
 private excludedClassFilesForReport(classDirectories) {
     classDirectories.setFrom(
             files(classDirectories.files.collect {
                 fileTree(dir: it, exclude: [
                         "**/common/**",
                         "**/dto/**",
-                        "**/*domain*/**",
                         "**/*Application*",
                         "**/controller/**",
                         "**/exception/**",

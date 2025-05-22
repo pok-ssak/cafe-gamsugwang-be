@@ -1,21 +1,14 @@
 package pokssak.gsg.domain.user.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
-import java.util.List;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.domain.bookmark.entity.Bookmark;
 import pokssak.gsg.domain.review.entity.Review;
+
+import java.util.List;
 
 @Table(name = "users")
 @Builder
@@ -23,6 +16,8 @@ import pokssak.gsg.domain.review.entity.Review;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id = ?")
+@Where(clause = "is_deleted = false")
 public class User extends BaseEntity {
 
     @Id
@@ -42,4 +37,19 @@ public class User extends BaseEntity {
 
     @Enumerated
     private JoinType joinType;
+
+    private boolean isDeleted = false;
+
+    public void updateProfile(String nickName, String imageUrl) {
+        this.nickName = nickName;
+        this.imageUrl = imageUrl;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void restore() {
+        this.isDeleted = false;
+    }
 }

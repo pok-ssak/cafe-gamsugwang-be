@@ -35,6 +35,12 @@ public class CafeDocument {
     )
     private String title;
 
+    @Field(type = FieldType.Keyword)
+    private String imgUrl;
+
+    @Field(type = FieldType.Integer)
+    private Integer reviewCount;
+
     @Field(type = FieldType.Text)
     private String info;
 
@@ -55,6 +61,12 @@ public class CafeDocument {
 
     @Field(type = FieldType.Nested)
     private List<Keyword> keywords;
+
+    @Field(type = FieldType.Dense_Vector,
+    dims = 1536,
+    index = true,
+    similarity = "cosine")
+    private Float[] keywordVector;
 
     public static class Menu {
         @Field(type = FieldType.Text)

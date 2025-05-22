@@ -12,3 +12,12 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY:secretkey}
+      embedding:
+        options:
+          model: text-embedding-3-small
+
+
+

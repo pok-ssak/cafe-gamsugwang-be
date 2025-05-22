@@ -5,7 +5,7 @@ import pokssak.gsg.domain.review.entity.Review;
 
 @Builder
 public record ReviewCreateRequest(
-        String title,
+        Long cafeId,
         String content,
         String imageUrl,
         int rate

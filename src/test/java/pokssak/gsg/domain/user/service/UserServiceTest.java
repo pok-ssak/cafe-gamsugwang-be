@@ -61,7 +61,7 @@ class UserServiceTest {
                 .id(1L)
                 .nickName("testuser")
                 .email("test@example.com")
-                .password("encodedPassword")
+                .password("plaintext")
                 .imageUrl("http://image.com/profile.jpg")
                 .joinType(JoinType.LOCAL)
                 .build();
@@ -71,7 +71,6 @@ class UserServiceTest {
     @DisplayName("회원가입 성공")
     void register_success() {
         when(userRepository.existsByEmail(anyString())).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(userRepository.save(any(User.class))).thenReturn(user);
 
         UserResponse response = userService.register(registerRequest);

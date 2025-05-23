@@ -16,6 +16,6 @@ import pokssak.gsg.common.entity.BaseEntity;
 public class Cafe extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
 }

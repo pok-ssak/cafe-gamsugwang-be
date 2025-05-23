@@ -5,7 +5,9 @@ import lombok.*;
 import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.domain.bookmark.entity.Bookmark;
 import pokssak.gsg.domain.review.entity.Review;
+import pokssak.gsg.domain.review.entity.ReviewLike;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Table(name = "users")
@@ -24,13 +26,21 @@ public class User extends BaseEntity {
     private String password;
     private String imageUrl;
 
-    @OneToMany
-    private List<UserKeyword> userKeywords;
-    @OneToMany
-    private List<Bookmark> bookmarks;
-    @OneToMany
+//    @OneToMany
+//    private List<UserKeyword> userKeywords;
+//    @OneToMany
+//    private List<Bookmark> bookmarks;
+    @OneToMany(mappedBy = "user")
     private List<Review> reviews;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private List<ReviewLike> likedReviews = new ArrayList<>();
 
     @Enumerated
     private JoinType joinType;
+
+    public boolean hasLiked(Long reviewId) {
+        return likedReviews.stream().anyMatch(reviewLike -> reviewLike.getReview().getId().equals(reviewId));
+    }
 }

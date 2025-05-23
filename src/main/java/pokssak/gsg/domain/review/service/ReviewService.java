@@ -13,7 +13,12 @@ import pokssak.gsg.domain.review.dto.ReviewResponse;
 import pokssak.gsg.domain.review.entity.Review;
 import pokssak.gsg.domain.review.exception.ReviewErrorCode;
 import pokssak.gsg.domain.review.repository.ReviewRepository;
+import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.UserService;
+
+import java.util.Collections;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -25,27 +30,35 @@ public class ReviewService {
     private final UserService userService; // Facade 고려
     private final CafeService cafeService;
 
-
     /** 리뷰 전체 조회 */
-    public Page<ReviewResponse> getReviews(Pageable pageable) {
+    public Page<ReviewResponse> getReviews(User user, Pageable pageable) {
         log.info("리뷰 조회 pageable={}", pageable);
+        Set<Long> likedReviewIds = (user == null) ? Collections.emptySet() // 조회 줄이기
+                : user.getLikedReviews().stream()
+                .map(reviewLike -> reviewLike.getReview().getId())
+                .collect(Collectors.toSet());
         return reviewRepository.findAll(pageable)
-                .map(ReviewResponse::from);
+                .map(review -> ReviewResponse.from(review, likedReviewIds.contains(review.getId())));
     }
 
     /** 카페별 리뷰 전체 조회 */
-    public Page<ReviewResponse> getReviews(Long cafeId, Pageable pageable) {
+    public Page<ReviewResponse> getReviews(Long cafeId, User user, Pageable pageable) {
         log.info("리뷰 카페별 조회 cafeId={}, pageable={}", cafeId, pageable);
+        Set<Long> likedReviewIds = (user == null) ? Collections.emptySet()
+                : user.getLikedReviews().stream()
+                .map(reviewLike -> reviewLike.getReview().getId())
+                .collect(Collectors.toSet());
         return reviewRepository.findByCafeId(cafeId, pageable)
-                .map(ReviewResponse::from);
+                .map(review -> ReviewResponse.from(review, likedReviewIds.contains(review.getId())));
     }
 
     /** 리뷰 상세 조회 */
-    public ReviewResponse getReviewById(Long reviewId) {
+    public ReviewResponse getReviewById(User user, Long reviewId) {
         log.info("리뷰 상세 조회 reviewId={}", reviewId);
+        var liked = user == null ? false : user.hasLiked(reviewId);
         var review = reviewRepository.findById(reviewId)
                 .orElseThrow(()-> new CustomException(ReviewErrorCode.NOT_FOUND));
-        return ReviewResponse.from(review);
+        return ReviewResponse.from(review, liked);
     }
 
     /** 리뷰 생성 */
@@ -55,7 +68,7 @@ public class ReviewService {
     @Transactional
     public Long createReview(Long userId, ReviewCreateRequest reviewCreateRequest) {
 
-        log.info("리뷰 추가 id={}, body={}", userId, reviewCreateRequest);
+        log.info("리뷰 추가 id={}, reviewCreateRequest={}", userId, reviewCreateRequest);
 
         var user = userService.getUserById(userId);
         var cafe = cafeService.getCafeById(reviewCreateRequest.cafeId());

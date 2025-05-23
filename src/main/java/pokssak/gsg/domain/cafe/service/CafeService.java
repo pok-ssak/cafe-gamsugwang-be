@@ -39,7 +39,6 @@ public class CafeService {
         return titles;
     }
 
-
     /**
      * 카페 추천 키워드 기반
      * @param keyword
@@ -52,8 +51,6 @@ public class CafeService {
         log.info("cafeDocuments = {}", cafeDocuments);
         return cafeDocuments;
     }
-
-
 
     /**
      * 카페 추천 위치 기반

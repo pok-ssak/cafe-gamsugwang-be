@@ -11,6 +11,7 @@ import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.bookmark.entity.Bookmark;
 import pokssak.gsg.domain.review.entity.Review;
+import pokssak.gsg.domain.user.exception.UserErrorCode;
 import pokssak.gsg.domain.review.entity.ReviewLike;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
 
@@ -43,6 +44,7 @@ public class User extends BaseEntity implements UserDetails{
     @OneToMany(mappedBy = "user")
     private List<Review> reviews;
 
+    @Enumerated(EnumType.STRING)
     @Builder.Default
     @OneToMany(mappedBy = "user")
     private List<ReviewLike> likedReviews = new ArrayList<>();

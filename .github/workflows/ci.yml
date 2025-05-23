@@ -28,25 +28,21 @@ jobs:
           docker-compose -f docker-compose.yml up -d
 
       - name: Wait for services to be ready
-        run: sleep 15
+        uses: jaracogmbh/docker-compose-health-check-action@v1.0.0
+        with:
+          max-retries: 30
+          retry-interval: 5
+          compose-file: "docker-compose.yml"
+          skip-exited: "true"
+          skip-no-healthcheck: "true"
 
       - name: Setup application.yml
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: ./src/main/resources/application.yml
-        env:
-          spring.data.redis.host: ${{ secrets.REDIS_HOST }}
-          spring.data.redis.port: ${{ secrets.REDIS_PORT }}
-          spring.elasticsearch.uris: ${{ secrets.ELASTICSEARCH_HOST }}
-
-      - name: Setup application-dev.yml
-        uses: microsoft/variable-substitution@v1
-        with:
-          files: ./src/main/resources/application-dev.yml
-        env:
-          spring.datasource.url: ${{ secrets.DB_URL }}
-          spring.datasource.username: ${{ secrets.DB_USERNAME }}
-          spring.datasource.password: ${{ secrets.DB_PASSWORD }}
+        run: |
+          cd ./src/main/resources
+          echo "${{ secrets.APPLICATION }}" > ./application.yml
+          echo "${{ secrets.APPLICATION_LOCAL }}" > ./application-local.yml
+          echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
+        shell: bash
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3

@@ -44,4 +44,8 @@ public class Review extends BaseEntity {
 
     @Builder.Default
     private Long likeCount = 0L;
+
+    public void updateLikeCount(long value) {
+        this.likeCount = value;
+    }
 }

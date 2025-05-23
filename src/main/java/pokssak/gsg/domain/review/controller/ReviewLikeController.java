@@ -16,17 +16,19 @@ import pokssak.gsg.domain.user.entity.User;
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 
 @RestController
-public class ReviewLikeController implements ReviewLikeControllerApi {
+//public class ReviewLikeController implements ReviewLikeControllerApi {
+public class ReviewLikeController{
 
     private final ReviewLikeService reviewLikeService;
 
     /** 리뷰 좋아요 */
     @PostMapping("/{reviewId}/like-toggle")
     public ResponseEntity<ApiResponse<?>> toggleLike(
-            @AuthenticationPrincipal User user,
+//            @AuthenticationPrincipal User user,
             @PathVariable("reviewId") Long reviewId
     ) {
-        reviewLikeService.toggle(user.getId(), reviewId);
+//        reviewLikeService.toggle(user.getId(), reviewId);
+        reviewLikeService.toggle(1L, reviewId);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

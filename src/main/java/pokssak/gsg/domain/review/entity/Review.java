@@ -6,6 +6,9 @@ import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.domain.cafe.entity.Cafe;
 import pokssak.gsg.domain.user.entity.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Table(name = "reviews")
 @Builder
 @Getter
@@ -34,4 +37,15 @@ public class Review extends BaseEntity {
     //, foreignKey = @ForeignKey(NO_CONSTRAINT)
     @JoinColumn(name = "cafe_id", nullable = false)
     private Cafe cafe;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "review")
+    private List<ReviewLike> likedUser = new ArrayList<>();
+
+    @Builder.Default
+    private Long likeCount = 0L;
+
+    public void updateLikeCount(long value) {
+        this.likeCount = value;
+    }
 }

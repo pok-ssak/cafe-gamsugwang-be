@@ -62,7 +62,7 @@ class ReviewServiceTest {
 
             // when
             when(reviewRepository.findAll(any(Pageable.class))).thenReturn(mockedPages);
-            var result = reviewService.getReviews(pageable);
+            var result = reviewService.getReviews(user, pageable);
 
             // then
             assertThat(result.getSize()).isEqualTo(1);
@@ -77,7 +77,7 @@ class ReviewServiceTest {
 
             // when
             when(reviewRepository.findByCafeId(eq(cafe.getId()), any(Pageable.class))).thenReturn(mockedPages);
-            var response = reviewService.getReviews(cafe.getId(), pageable);
+            var response = reviewService.getReviews(cafe.getId(), user, pageable);
 
             // then
             assertThat(response.getSize()).isEqualTo(1);
@@ -120,7 +120,7 @@ class ReviewServiceTest {
 
             // when
             when(reviewRepository.findById(reviewId)).thenReturn(Optional.of(mockedReview));
-            var result = reviewService.getReviewById(reviewId);
+            var result = reviewService.getReviewById(user, reviewId);
 
             // then
             assertThat(result.reviewId())
@@ -137,7 +137,7 @@ class ReviewServiceTest {
             when(reviewRepository.findById(reviewId)).thenReturn(Optional.empty());
 
             // then
-            assertThatThrownBy(() -> reviewService.getReviewById(reviewId))
+            assertThatThrownBy(() -> reviewService.getReviewById(user, reviewId))
                     .isInstanceOf(CustomException.class)
                     .extracting("errorCode")
                     .isEqualTo(ReviewErrorCode.NOT_FOUND);

@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.5'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'jacoco'
 }
 
 group = 'pokssak'
@@ -23,6 +24,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    set('springAiVersion', "1.0.0")
+}
+
 dependencies {
     // spring boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -31,6 +36,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     // db
+    runtimeOnly 'com.h2database:h2'
     runtimeOnly 'com.mysql:mysql-connector-j'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
@@ -38,6 +44,11 @@ dependencies {
     // lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // jwt
+    implementation group: 'io.jsonwebtoken', name: 'jjwt-api', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-impl', version: '0.11.5'
+    runtimeOnly group: 'io.jsonwebtoken', name: 'jjwt-jackson', version: '0.11.5'
 
     // test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -53,8 +64,48 @@ dependencies {
     // logging
     implementation "com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0"
 
+    // ai
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    // aws
+    implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.12.767'
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 tasks.named('test') {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport, jacocoTestCoverageVerification
+}
+
+jacocoTestReport {
+//     executionData(fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec"))
+
+    reports {
+        html.required = true
+        xml.required = true
+    }
+    excludedClassFilesForReport(classDirectories)
+}
+
+
+private excludedClassFilesForReport(classDirectories) {
+    classDirectories.setFrom(
+            files(classDirectories.files.collect {
+                fileTree(dir: it, exclude: [
+                        "**/common/**",
+                        "**/dto/**",
+                        "**/*Application*",
+                        "**/controller/**",
+                        "**/exception/**",
+                        "**/Q*.class",          // QueryDSL Q classes
+                        "**/generated/**"
+                ])
+            })
+    )
 }

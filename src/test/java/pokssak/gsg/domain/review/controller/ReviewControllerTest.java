@@ -14,14 +14,13 @@ import pokssak.gsg.domain.cafe.entity.Cafe;
 import pokssak.gsg.domain.review.dto.ReviewCreateRequest;
 import pokssak.gsg.domain.review.dto.ReviewResponse;
 import pokssak.gsg.domain.review.service.ReviewService;
+import pokssak.gsg.domain.user.entity.User;
 
-import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -34,6 +33,7 @@ class ReviewControllerTest {
     ReviewController reviewController;
 
     Cafe cafe = Cafe.builder().id(111L).build();
+    User user = User.builder().id(222L).build();
 
     @Nested
     @DisplayName("모든 리뷰 조회")
@@ -46,8 +46,8 @@ class ReviewControllerTest {
             var mocked = new PageImpl<ReviewResponse>(List.of());
 
             // when
-            when(reviewService.getReviews(any(Pageable.class))).thenReturn(mocked);
-            var response = reviewController.getReviews(Pageable.unpaged());
+            when(reviewService.getReviews(any(User.class), any(Pageable.class))).thenReturn(mocked);
+            var response = reviewController.getReviews(user, Pageable.unpaged());
 
             // then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -66,8 +66,8 @@ class ReviewControllerTest {
             var mocked = ReviewResponse.builder().build();
 
             // when
-            when(reviewService.getReviewById(eq(cafe.getId()))).thenReturn(mocked);
-            var response = reviewController.getReview(cafe.getId());
+            when(reviewService.getReviewById(any(User.class), eq(cafe.getId()))).thenReturn(mocked);
+            var response = reviewController.getReview(user, cafe.getId());
 
             // then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);

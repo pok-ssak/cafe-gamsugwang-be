@@ -11,11 +11,13 @@ import pokssak.gsg.common.dto.ApiResponse;
 import pokssak.gsg.domain.review.controller.api.ReviewControllerApi;
 import pokssak.gsg.domain.review.dto.ReviewCreateRequest;
 import pokssak.gsg.domain.review.dto.ReviewResponse;
+import pokssak.gsg.domain.review.service.ReviewLikeService;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.UserService;
 
 import java.net.URI;
+import java.nio.file.Path;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -26,19 +28,26 @@ import java.net.URI;
 public class ReviewController implements ReviewControllerApi {
 
     private final ReviewService reviewService;
+    private final ReviewLikeService reviewLikeService;
     private final UserService userService;
 
     /** 모든 리뷰 조회 */
     @GetMapping("")
-    public ResponseEntity<ApiResponse<Page<ReviewResponse>>> getReviews(Pageable pageable){
-        var page = reviewService.getReviews(pageable);
+    public ResponseEntity<ApiResponse<Page<ReviewResponse>>> getReviews(
+            @AuthenticationPrincipal User user,
+            Pageable pageable
+    ){
+        var page = reviewService.getReviews(user, pageable);
         return ResponseEntity.ok(ApiResponse.ok(page));
     }
 
     /** 리뷰 상세 조회 */
     @GetMapping("/{reviewId}")
-    public ResponseEntity<ApiResponse<ReviewResponse>> getReview(@PathVariable("reviewId") Long reviewId){
-        var response = reviewService.getReviewById(reviewId);
+    public ResponseEntity<ApiResponse<ReviewResponse>> getReview(
+            @AuthenticationPrincipal User user,
+            @PathVariable("reviewId") Long reviewId
+    ){
+        var response = reviewService.getReviewById(user, reviewId);
         return ResponseEntity.ok(ApiResponse.ok(response));
     }
 

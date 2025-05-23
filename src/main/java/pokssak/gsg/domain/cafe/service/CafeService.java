@@ -9,6 +9,8 @@ import pokssak.gsg.domain.cafe.dto.RecommendResponse;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
 
 import java.util.List;
+import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.cafe.repository.CafeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -17,7 +19,11 @@ import java.util.List;
 public class CafeService {
     private final CafeSearchService cafeSearchService;
     private final CafeESRepository cafeESRepository;
+    private final CafeRepository cafeRepository;
 
+    public Cafe getCafeById(Long cafeId) {
+        return cafeRepository.findById(cafeId).get();
+    }
 
     /**
      * 카페 제목 자동완성

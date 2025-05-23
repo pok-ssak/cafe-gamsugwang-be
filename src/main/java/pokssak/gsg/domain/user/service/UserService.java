@@ -5,9 +5,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import pokssak.gsg.common.exception.CustomException;
+import pokssak.gsg.common.s3.S3Uploader;
 import pokssak.gsg.domain.user.dto.UserProfileResponse;
-import pokssak.gsg.domain.user.dto.UserProfileUpdateRequest;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
 import pokssak.gsg.domain.user.dto.UserResponse;
 import pokssak.gsg.domain.user.entity.User;
@@ -20,8 +21,9 @@ import pokssak.gsg.domain.user.repository.UserRepository;
 public class UserService{
 
     private final UserRepository userRepository;
-//    private final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder encoder;
     private final UserKeywordService userKeywordService;
+    private final S3Uploader s3Uploader;
 
     // 회원가입
     public UserResponse register(UserRegisterRequest request) {
@@ -35,7 +37,7 @@ public class UserService{
         User user = User.builder()
                 .nickName(request.nickName())
                 .email(request.email())
-                .password(request.password())
+                .password(encoder.encode(request.password()))
                 .imageUrl(request.imageUrl())
                 .joinType(request.joinType())
                 .build();
@@ -74,8 +76,8 @@ public class UserService{
 
     // 프로필 조회
     @Transactional(readOnly = true)
-    public UserProfileResponse getProfile(User currentUser) {
-        User user = userRepository.findById(currentUser.getId())
+    public UserProfileResponse getProfile(Long userId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
 
         return UserProfileResponse.from(user);
@@ -83,12 +85,12 @@ public class UserService{
 
     // 프로필 수정
     @Transactional
-    public void updateProfile(User currentUser, UserProfileUpdateRequest request) {
-        User user = userRepository.findById(currentUser.getId())
+    public void updateProfile(Long userId, String nickName, MultipartFile image) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
 
-        user.updateProfile(request.nickName(), request.imageUrl());
-
+        String imageUrl = (image != null) ? s3Uploader.upload(image) : user.getImageUrl();
+        user.updateProfile(nickName, imageUrl);
     }
 
 }

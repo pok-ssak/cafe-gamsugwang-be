@@ -54,11 +54,10 @@ public class ReviewController implements ReviewControllerApi {
     /** 리뷰 추가 */
     @PostMapping("")
     public ResponseEntity<ApiResponse<Void>> createReview(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal User user,
             @RequestBody ReviewCreateRequest reviewCreateRequest
     ){
-        userId = 1L; //TODO : 테스트용
-        var reviewId = reviewService.createReview(userId, reviewCreateRequest);
+        var reviewId = reviewService.createReview(user.getId(), reviewCreateRequest);
         var uri = URI.create("/api/v1/reviews/" + reviewId);
         return ResponseEntity.created(uri)
                 .body(ApiResponse.ok(null));

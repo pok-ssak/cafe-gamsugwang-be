@@ -42,7 +42,7 @@ public interface ReviewControllerApi {
             @ApiResponse(responseCode = "200", description = "생성 성공")
     })
     ResponseEntity<?> createReview(
-            @AuthenticationPrincipal Long userId,
+            @AuthenticationPrincipal User user,
             @RequestBody ReviewCreateRequest reviewCreateRequest
     );
 

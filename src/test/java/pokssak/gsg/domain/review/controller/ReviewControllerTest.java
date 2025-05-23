@@ -82,13 +82,12 @@ class ReviewControllerTest {
         @DisplayName("생성 성공")
         void crateReview() {
             // given
-            var userId = 1L;
             var createRequest = ReviewCreateRequest.builder().build();
             var mocked = 111L;
 
             // when
-            when(reviewService.createReview(eq(userId), eq(createRequest))).thenReturn(mocked);
-            var response = reviewController.createReview(userId, createRequest);
+            when(reviewService.createReview(eq(user.getId()), eq(createRequest))).thenReturn(mocked);
+            var response = reviewController.createReview(user, createRequest);
 
             // then
             assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);

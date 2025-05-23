@@ -1,0 +1,26 @@
+{
+  "analysis": {
+    "filter": {
+      "edge_ngram_filter": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 10
+      }
+    },
+    "analyzer": {
+      "edge_ngram_analyzer": {
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase",
+          "edge_ngram_filter"
+        ]
+      },
+      "standard_search": {
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase"
+        ]
+      }
+    }
+  }
+}

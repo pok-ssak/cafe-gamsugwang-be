@@ -22,8 +22,6 @@ import java.nio.file.Path;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
-
 @RestController
 public class ReviewController implements ReviewControllerApi {
 

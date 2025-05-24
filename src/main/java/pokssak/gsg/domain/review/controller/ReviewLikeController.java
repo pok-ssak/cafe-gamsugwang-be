@@ -13,7 +13,6 @@ import pokssak.gsg.domain.user.entity.User;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/reviews")
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 public class ReviewLikeController implements ReviewLikeControllerApi {
 

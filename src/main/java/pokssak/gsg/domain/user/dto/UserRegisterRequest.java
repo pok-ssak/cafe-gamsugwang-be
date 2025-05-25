@@ -11,7 +11,6 @@ public record UserRegisterRequest(
         String nickName,
         String email,
         String password,
-        String imageUrl,
         JoinType joinType,
         List<Keyword> keywords
 ) {

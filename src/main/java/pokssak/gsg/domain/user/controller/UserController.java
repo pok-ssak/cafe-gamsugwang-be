@@ -28,24 +28,9 @@ public class UserController {
             @RequestPart("request") UserRegisterRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        String imageUrl = null;
+        String imageUrl = (image != null && !image.isEmpty()) ? s3Uploader.upload(image) : "";
 
-        // 이미지가 있는 경우 S3에 업로드
-        if (image != null && !image.isEmpty()) {
-            imageUrl = s3Uploader.upload(image);
-        }
-
-        // imageUrl을 포함한 새로운 request 생성
-        UserRegisterRequest updatedRequest = UserRegisterRequest.builder()
-                .nickName(request.nickName())
-                .email(request.email())
-                .password(request.password())
-                .joinType(request.joinType())
-                .keywords(request.keywords())
-                .imageUrl(imageUrl != null ? imageUrl : "")
-                .build();
-
-        UserResponse response = userService.register(updatedRequest);
+        UserResponse response = userService.register(request, imageUrl);
         return ResponseEntity.ok(response);
     }
 
@@ -72,7 +57,7 @@ public class UserController {
     }
 
     // 프로필 수정
-    @PutMapping(value = "/users/{userId}/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping(value = "/users/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Void> updateProfile(
             @AuthenticationPrincipal User user,
             @RequestPart("nickName") String nickName,

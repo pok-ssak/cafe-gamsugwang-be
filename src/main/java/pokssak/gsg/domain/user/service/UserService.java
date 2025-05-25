@@ -26,7 +26,7 @@ public class UserService{
     private final S3Uploader s3Uploader;
 
     // 회원가입
-    public UserResponse register(UserRegisterRequest request) {
+    public UserResponse register(UserRegisterRequest request, String imageUrl) {
         log.info("회원가입 요청 - email={}, nickname={}", request.email(), request.nickName());
 
         if (userRepository.existsByEmail(request.email())) {
@@ -38,7 +38,7 @@ public class UserService{
                 .nickName(request.nickName())
                 .email(request.email())
                 .password(encoder.encode(request.password()))
-                .imageUrl(request.imageUrl())
+                .imageUrl(imageUrl)
                 .joinType(request.joinType())
                 .build();
 

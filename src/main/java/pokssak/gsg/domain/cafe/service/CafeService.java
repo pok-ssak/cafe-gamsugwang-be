@@ -3,6 +3,8 @@ package pokssak.gsg.domain.cafe.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
@@ -64,5 +66,9 @@ public class CafeService {
         List<RecommendResponse> cafeDocuments = cafeSearchService.recommendByLocation(lat, lon, 20, limit);
         log.info("cafeDocuments = {}", cafeDocuments);
         return cafeDocuments;
+    }
+
+    public Page<Cafe> getCafes(Pageable pageable) {
+        return cafeRepository.findAll(pageable);
     }
 }

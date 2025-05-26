@@ -42,7 +42,6 @@ public class User extends BaseEntity implements UserDetails{
     @OneToMany(mappedBy = "user")
     private List<Review> reviews;
 
-    @Enumerated(EnumType.STRING)
     @Builder.Default
     @OneToMany(mappedBy = "user")
     private List<ReviewLike> likedReviews = new ArrayList<>();

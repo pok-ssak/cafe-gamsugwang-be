@@ -40,6 +40,11 @@ public class SecurityConfig {
                 return config;
             }))
 
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .anyRequest().authenticated()
+            )
+
             .headers(header -> header.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin))
 
             .httpBasic(HttpBasicConfigurer::disable)

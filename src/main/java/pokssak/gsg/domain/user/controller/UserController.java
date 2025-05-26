@@ -22,17 +22,17 @@ public class UserController {
     private final UserService userService;
     private final S3Uploader s3Uploader;
 
-    // 회원가입
-    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<UserResponse> register(
-            @RequestPart("request") UserRegisterRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile image
-    ) {
-        String imageUrl = (image != null && !image.isEmpty()) ? s3Uploader.upload(image) : "";
-
-        UserResponse response = userService.register(request, imageUrl);
-        return ResponseEntity.ok(response);
-    }
+//    // 회원가입
+//    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<UserResponse> register(
+//            @RequestPart("request") UserRegisterRequest request,
+//            @RequestPart(value = "image", required = false) MultipartFile image
+//    ) {
+//        String imageUrl = (image != null && !image.isEmpty()) ? s3Uploader.upload(image) : "";
+//
+//        UserResponse response = userService.register(request, imageUrl);
+//        return ResponseEntity.ok(response);
+//    }
 
 
     // 회원탈퇴 (soft delete)

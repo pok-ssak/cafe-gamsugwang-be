@@ -51,111 +51,111 @@ class UserControllerTest {
                 .build();
     }
 
-    @Test
-    @DisplayName("회원가입 성공")
-    void register_success() throws Exception {
-        UserRegisterRequest request = UserRegisterRequest.builder()
-                .email("test@example.com")
-                .password("securePassword")
-                .nickName("tester")
-                .joinType(JoinType.LOCAL)
-                .keywords(List.of())
-                .build();
-
-        MockMultipartFile image = new MockMultipartFile(
-                "image", "profile.png", "image/png", "image-bytes".getBytes()
-        );
-
-        String uploadedImageUrl = "https://s3.com/profile.png";
-        UserResponse expectedResponse = UserResponse.builder()
-                .nickName("tester")
-                .email("test@example.com")
-                .imageUrl(uploadedImageUrl)
-                .joinType(JoinType.LOCAL)
-                .userKeywords(List.of())
-                .build();
-
-        when(s3Uploader.upload(image)).thenReturn(uploadedImageUrl);
-        when(userService.register(request, uploadedImageUrl)).thenReturn(expectedResponse);
-
-        // when
-        ResponseEntity<UserResponse> response = userController.register(request, image);
-
-        // then
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-    }
-
-    @Test
-    @DisplayName("회원가입 성공 - 이미지 없이")
-    void register_success_without_image() throws Exception {
-        UserRegisterRequest request = UserRegisterRequest.builder()
-                .email("noimage@example.com")
-                .password("securePassword")
-                .nickName("noimage")
-                .joinType(JoinType.LOCAL)
-                .keywords(List.of())
-                .build();
-
-        String emptyImageUrl = "";  // 이미지가 없는 경우 ""로 처리
-        UserResponse expectedResponse = UserResponse.builder()
-                .nickName("noimage")
-                .email("noimage@example.com")
-                .imageUrl(emptyImageUrl)
-                .joinType(JoinType.LOCAL)
-                .userKeywords(List.of())
-                .build();
-
-        // s3Uploader.upload는 호출되지 않아야 하므로 설정하지 않음
-        when(userService.register(request, emptyImageUrl)).thenReturn(expectedResponse);
-
-        // when: 이미지 없이 호출
-        ResponseEntity<UserResponse> response = userController.register(request, null);
-
-        // then
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-
-        // s3Uploader.upload는 호출되지 않아야 함
-        verify(s3Uploader, never()).upload(any());
-    }
-
-    @Test
-    @DisplayName("회원가입 성공 - 이미지 파일은 있지만 내용이 비어 있음")
-    void register_success_with_empty_image() throws Exception {
-        UserRegisterRequest request = UserRegisterRequest.builder()
-                .email("emptyimage@example.com")
-                .password("securePassword")
-                .nickName("emptyuser")
-                .joinType(JoinType.LOCAL)
-                .keywords(List.of())
-                .build();
-
-        // 내용이 비어 있는 이미지 파일 생성
-        MockMultipartFile emptyImage = new MockMultipartFile(
-                "image", "empty.png", "image/png", new byte[0]  // 빈 byte 배열
-        );
-
-        String emptyImageUrl = "";  // 내용이 비어 있으므로 업로드하지 않음
-        UserResponse expectedResponse = UserResponse.builder()
-                .nickName("emptyuser")
-                .email("emptyimage@example.com")
-                .imageUrl(emptyImageUrl)
-                .joinType(JoinType.LOCAL)
-                .userKeywords(List.of())
-                .build();
-
-        // userService만 호출되며, s3Uploader.upload는 호출되지 않아야 함
-        when(userService.register(request, emptyImageUrl)).thenReturn(expectedResponse);
-
-        // when: 내용이 비어 있는 이미지 파일과 함께 회원가입 요청
-        ResponseEntity<UserResponse> response = userController.register(request, emptyImage);
-
-        // then
-        assertThat(response.getStatusCodeValue()).isEqualTo(200);
-        assertThat(response.getBody()).isEqualTo(expectedResponse);
-        verify(s3Uploader, never()).upload(any());
-    }
+//    @Test
+//    @DisplayName("회원가입 성공")
+//    void register_success() throws Exception {
+//        UserRegisterRequest request = UserRegisterRequest.builder()
+//                .email("test@example.com")
+//                .password("securePassword")
+//                .nickName("tester")
+//                .joinType(JoinType.LOCAL)
+//                .keywords(List.of())
+//                .build();
+//
+//        MockMultipartFile image = new MockMultipartFile(
+//                "image", "profile.png", "image/png", "image-bytes".getBytes()
+//        );
+//
+//        String uploadedImageUrl = "https://s3.com/profile.png";
+//        UserResponse expectedResponse = UserResponse.builder()
+//                .nickName("tester")
+//                .email("test@example.com")
+//                .imageUrl(uploadedImageUrl)
+//                .joinType(JoinType.LOCAL)
+//                .userKeywords(List.of())
+//                .build();
+//
+//        when(s3Uploader.upload(image)).thenReturn(uploadedImageUrl);
+//        when(userService.register(request, uploadedImageUrl)).thenReturn(expectedResponse);
+//
+//        // when
+//        ResponseEntity<UserResponse> response = userController.register(request, image);
+//
+//        // then
+//        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+//        assertThat(response.getBody()).isEqualTo(expectedResponse);
+//    }
+//
+//    @Test
+//    @DisplayName("회원가입 성공 - 이미지 없이")
+//    void register_success_without_image() throws Exception {
+//        UserRegisterRequest request = UserRegisterRequest.builder()
+//                .email("noimage@example.com")
+//                .password("securePassword")
+//                .nickName("noimage")
+//                .joinType(JoinType.LOCAL)
+//                .keywords(List.of())
+//                .build();
+//
+//        String emptyImageUrl = "";  // 이미지가 없는 경우 ""로 처리
+//        UserResponse expectedResponse = UserResponse.builder()
+//                .nickName("noimage")
+//                .email("noimage@example.com")
+//                .imageUrl(emptyImageUrl)
+//                .joinType(JoinType.LOCAL)
+//                .userKeywords(List.of())
+//                .build();
+//
+//        // s3Uploader.upload는 호출되지 않아야 하므로 설정하지 않음
+//        when(userService.register(request, emptyImageUrl)).thenReturn(expectedResponse);
+//
+//        // when: 이미지 없이 호출
+//        ResponseEntity<UserResponse> response = userController.register(request, null);
+//
+//        // then
+//        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+//        assertThat(response.getBody()).isEqualTo(expectedResponse);
+//
+//        // s3Uploader.upload는 호출되지 않아야 함
+//        verify(s3Uploader, never()).upload(any());
+//    }
+//
+//    @Test
+//    @DisplayName("회원가입 성공 - 이미지 파일은 있지만 내용이 비어 있음")
+//    void register_success_with_empty_image() throws Exception {
+//        UserRegisterRequest request = UserRegisterRequest.builder()
+//                .email("emptyimage@example.com")
+//                .password("securePassword")
+//                .nickName("emptyuser")
+//                .joinType(JoinType.LOCAL)
+//                .keywords(List.of())
+//                .build();
+//
+//        // 내용이 비어 있는 이미지 파일 생성
+//        MockMultipartFile emptyImage = new MockMultipartFile(
+//                "image", "empty.png", "image/png", new byte[0]  // 빈 byte 배열
+//        );
+//
+//        String emptyImageUrl = "";  // 내용이 비어 있으므로 업로드하지 않음
+//        UserResponse expectedResponse = UserResponse.builder()
+//                .nickName("emptyuser")
+//                .email("emptyimage@example.com")
+//                .imageUrl(emptyImageUrl)
+//                .joinType(JoinType.LOCAL)
+//                .userKeywords(List.of())
+//                .build();
+//
+//        // userService만 호출되며, s3Uploader.upload는 호출되지 않아야 함
+//        when(userService.register(request, emptyImageUrl)).thenReturn(expectedResponse);
+//
+//        // when: 내용이 비어 있는 이미지 파일과 함께 회원가입 요청
+//        ResponseEntity<UserResponse> response = userController.register(request, emptyImage);
+//
+//        // then
+//        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+//        assertThat(response.getBody()).isEqualTo(expectedResponse);
+//        verify(s3Uploader, never()).upload(any());
+//    }
 
 
 

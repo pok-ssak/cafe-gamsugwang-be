@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.common.jwt.JwtTokenDto;
 import pokssak.gsg.common.jwt.JwtTokenProvider;
+import pokssak.gsg.domain.user.dto.ConflictEmailCheckRequestDto;
 import pokssak.gsg.domain.user.dto.LoginRequestDto;
 import pokssak.gsg.domain.user.dto.SignupRequestDto;
 import pokssak.gsg.domain.user.entity.JoinType;
@@ -20,6 +21,13 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserKeywordService userKeywordService;
+
+    public void conflictEmailCheck(ConflictEmailCheckRequestDto conflictEmailCheckRequestDto) {
+        if (userRepository.existsByEmail(conflictEmailCheckRequestDto.email())) {
+            throw new CustomException(UserErrorCode.USER_EMAIL_ALREADY_EXIST);
+        }
+    }
 
     public JwtTokenDto localSignup(SignupRequestDto signupRequestDto) {
 
@@ -36,6 +44,8 @@ public class AuthService {
 
         userRepository.save(user);
 
+        userKeywordService.addUserKeywords(user.getId(), signupRequestDto.keywords().stream().toList());
+
         JwtTokenDto token = jwtTokenProvider.createToken(user.getEmail());
 
         // TODO : refresh token store in redis
@@ -49,7 +59,7 @@ public class AuthService {
         if (!passwordEncoder.matches(loginRequestDto.password(), user.getPassword())) {
             throw new CustomException(UserErrorCode.INCORRECT_PASSWORD);
         }
-        
+
         JwtTokenDto token = jwtTokenProvider.createToken(user.getEmail());
 
         // TODO : refresh token store in redis

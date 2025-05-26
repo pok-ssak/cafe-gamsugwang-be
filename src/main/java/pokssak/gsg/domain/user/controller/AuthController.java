@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import pokssak.gsg.common.dto.ApiResponse;
+import pokssak.gsg.domain.user.dto.ConflictEmailCheckRequestDto;
 import pokssak.gsg.domain.user.dto.LoginRequestDto;
 import pokssak.gsg.domain.user.dto.SignupRequestDto;
 import pokssak.gsg.domain.user.service.AuthService;
@@ -18,6 +19,13 @@ import pokssak.gsg.domain.user.service.AuthService;
 public class AuthController {
 
     private final AuthService authService;
+
+    @PostMapping("email-validate")
+    public ResponseEntity<?> conflictEmailCheck(
+        @RequestBody ConflictEmailCheckRequestDto conflictEmailCheckRequestDto) {
+        authService.conflictEmailCheck(conflictEmailCheckRequestDto);
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 
     @PostMapping("signup")
     public ResponseEntity<?> localSignup(@RequestBody SignupRequestDto signupRequestDto) {

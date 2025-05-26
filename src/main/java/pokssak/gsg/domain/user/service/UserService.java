@@ -25,30 +25,30 @@ public class UserService{
     private final UserKeywordService userKeywordService;
     private final S3Uploader s3Uploader;
 
-    // 회원가입
-    public UserResponse register(UserRegisterRequest request, String imageUrl) {
-        log.info("회원가입 요청 - email={}, nickname={}", request.email(), request.nickName());
-
-        if (userRepository.existsByEmail(request.email())) {
-            log.warn("회원가입 실패 - 중복 이메일: {}", request.email());
-            throw new CustomException(UserErrorCode.USER_EMAIL_ALREADY_EXIST);
-        }
-
-        User user = User.builder()
-                .nickName(request.nickName())
-                .email(request.email())
-                .password(encoder.encode(request.password()))
-                .imageUrl(imageUrl)
-                .joinType(request.joinType())
-                .build();
-
-        User savedUser = userRepository.save(user);
-
-        userKeywordService.addUserKeywords(savedUser.getId(), request.keywords());
-
-        log.info("회원가입 성공 - userId={}, email={}", savedUser.getId(), savedUser.getEmail());
-        return UserResponse.from(savedUser);
-    }
+//    // 회원가입
+//    public UserResponse register(UserRegisterRequest request, String imageUrl) {
+//        log.info("회원가입 요청 - email={}, nickname={}", request.email(), request.nickName());
+//
+//        if (userRepository.existsByEmail(request.email())) {
+//            log.warn("회원가입 실패 - 중복 이메일: {}", request.email());
+//            throw new CustomException(UserErrorCode.USER_EMAIL_ALREADY_EXIST);
+//        }
+//
+//        User user = User.builder()
+//                .nickName(request.nickName())
+//                .email(request.email())
+//                .password(encoder.encode(request.password()))
+//                .imageUrl(imageUrl)
+//                .joinType(request.joinType())
+//                .build();
+//
+//        User savedUser = userRepository.save(user);
+//
+//        userKeywordService.addUserKeywords(savedUser.getId(), request.keywords());
+//
+//        log.info("회원가입 성공 - userId={}, email={}", savedUser.getId(), savedUser.getEmail());
+//        return UserResponse.from(savedUser);
+//    }
 
     // 회원탈퇴
     public void deleteUser(Long userId) {

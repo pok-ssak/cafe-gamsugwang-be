@@ -11,7 +11,9 @@ import org.hibernate.annotations.SQLDelete;
 import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.domain.bookmark.entity.Bookmark;
 import pokssak.gsg.domain.review.entity.Review;
+import pokssak.gsg.domain.review.entity.ReviewLike;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Table(name = "users")
@@ -37,11 +39,17 @@ public class User extends BaseEntity implements UserDetails{
     private List<UserKeyword> userKeywords;
     @OneToMany
     private List<Bookmark> bookmarks;
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<Review> reviews;
 
     @Enumerated(EnumType.STRING)
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private List<ReviewLike> likedReviews = new ArrayList<>();
+
+    @Enumerated(EnumType.STRING)
     private JoinType joinType;
+
 
     @Builder.Default
     private Boolean isDeleted = false;
@@ -55,7 +63,7 @@ public class User extends BaseEntity implements UserDetails{
     public String getUsername() {
         return email;
     }
-      
+
     public void updateProfile(String nickName, String imageUrl) {
         this.nickName = nickName;
         this.imageUrl = imageUrl;
@@ -67,5 +75,9 @@ public class User extends BaseEntity implements UserDetails{
 
     public void restore() {
         this.isDeleted = false;
+    }
+
+    public boolean hasLiked(Long reviewId) {
+        return likedReviews.stream().anyMatch(reviewLike -> reviewLike.getReview().getId().equals(reviewId));
     }
 }

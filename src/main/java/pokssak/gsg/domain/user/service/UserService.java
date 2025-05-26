@@ -93,4 +93,8 @@ public class UserService{
         user.updateProfile(nickName, imageUrl);
     }
 
+    public User getUserById(Long userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
+    }
 }

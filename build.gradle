@@ -24,6 +24,10 @@ repositories {
     mavenCentral()
 }
 
+ext {
+    set('springAiVersion', "1.0.0")
+}
+
 dependencies {
     // spring boot
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -60,10 +64,18 @@ dependencies {
     // logging
     implementation "com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.11.0"
 
+    // ai
+    implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
     // aws
     implementation 'io.awspring.cloud:spring-cloud-aws-starter:3.1.1'
     implementation 'com.amazonaws:aws-java-sdk-s3:1.12.767'
+}
 
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.ai:spring-ai-bom:${springAiVersion}"
+    }
 }
 
 tasks.named('test') {

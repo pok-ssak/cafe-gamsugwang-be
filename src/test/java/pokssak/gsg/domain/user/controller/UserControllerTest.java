@@ -1,6 +1,5 @@
 package pokssak.gsg.domain.user.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,24 +9,21 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import pokssak.gsg.common.s3.S3Uploader;
+import pokssak.gsg.domain.user.dto.UserProfileResponse;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
 import pokssak.gsg.domain.user.dto.UserResponse;
 import pokssak.gsg.domain.user.entity.JoinType;
+import pokssak.gsg.domain.user.entity.User;
+import pokssak.gsg.domain.user.entity.UserKeyword;
 import pokssak.gsg.domain.user.service.UserService;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.*;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserControllerTest {
@@ -41,82 +37,198 @@ class UserControllerTest {
     @InjectMocks
     private UserController userController;
 
-    private MockMvc mockMvc;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private User testUser;
 
     @BeforeEach
-    void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+    void setUp() {
+        testUser = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickName("tester")
+                .imageUrl("https://image.com/test.png")
+                .joinType(JoinType.LOCAL)
+                .userKeywords(List.of())
+                .build();
     }
 
     @Test
     @DisplayName("회원가입 성공")
     void register_success() throws Exception {
-        // JSON 문자열로 보낼 UserRegisterRequest 일부 필드들
-        String jsonRequest = objectMapper.writeValueAsString(
-                UserRegisterRequest.builder()
-                        .nickName("testuser")
-                        .email("test@example.com")
-                        .password("plaintext")
-                        .joinType(JoinType.LOCAL)
-                        .keywords(List.of()) // 필요한 키워드 리스트
-                        .build()
-        );
-
-        // MultipartFile 모킹 (프로필 이미지)
-        MockMultipartFile imageFile = new MockMultipartFile(
-                "image",                            // form-data 이름
-                "profile.jpg",                     // 파일명
-                "image/jpeg",                      // Content-Type
-                "fake-image-content".getBytes()    // 파일 내용 (테스트용 더미 바이트)
-        );
-
-        // request 필드를 JSON 문자열 형태로 보내기 위한 MockMultipartFile
-        MockMultipartFile requestPart = new MockMultipartFile(
-                "request",                        // form-data 이름 (컨트롤러에서 @RequestPart("request")로 받을 때 이름 맞춰야 함)
-                "",                              // 파일명 없어도 됨
-                "application/json",              // Content-Type
-                jsonRequest.getBytes()           // JSON 바이트
-        );
-
-        UserResponse response = UserResponse.builder()
-                .nickName("testuser")
+        UserRegisterRequest request = UserRegisterRequest.builder()
                 .email("test@example.com")
+                .password("securePassword")
+                .nickName("tester")
+                .joinType(JoinType.LOCAL)
+                .keywords(List.of())
                 .build();
 
-        when(userService.register(any(UserRegisterRequest.class))).thenReturn(response);
+        MockMultipartFile image = new MockMultipartFile(
+                "image", "profile.png", "image/png", "image-bytes".getBytes()
+        );
 
-        mockMvc.perform(multipart("/api/v1/register")
-                        .file(requestPart)
-                        .file(imageFile)
-                        .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nickName").value("testuser"))
-                .andExpect(jsonPath("$.email").value("test@example.com"));
+        String uploadedImageUrl = "https://s3.com/profile.png";
+        UserResponse expectedResponse = UserResponse.builder()
+                .nickName("tester")
+                .email("test@example.com")
+                .imageUrl(uploadedImageUrl)
+                .joinType(JoinType.LOCAL)
+                .userKeywords(List.of())
+                .build();
 
-        verify(userService, times(1)).register(any(UserRegisterRequest.class));
+        when(s3Uploader.upload(image)).thenReturn(uploadedImageUrl);
+        when(userService.register(request, uploadedImageUrl)).thenReturn(expectedResponse);
+
+        // when
+        ResponseEntity<UserResponse> response = userController.register(request, image);
+
+        // then
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
 
     @Test
-    @DisplayName("회원탈퇴 성공")
+    @DisplayName("회원가입 성공 - 이미지 없이")
+    void register_success_without_image() throws Exception {
+        UserRegisterRequest request = UserRegisterRequest.builder()
+                .email("noimage@example.com")
+                .password("securePassword")
+                .nickName("noimage")
+                .joinType(JoinType.LOCAL)
+                .keywords(List.of())
+                .build();
+
+        String emptyImageUrl = "";  // 이미지가 없는 경우 ""로 처리
+        UserResponse expectedResponse = UserResponse.builder()
+                .nickName("noimage")
+                .email("noimage@example.com")
+                .imageUrl(emptyImageUrl)
+                .joinType(JoinType.LOCAL)
+                .userKeywords(List.of())
+                .build();
+
+        // s3Uploader.upload는 호출되지 않아야 하므로 설정하지 않음
+        when(userService.register(request, emptyImageUrl)).thenReturn(expectedResponse);
+
+        // when: 이미지 없이 호출
+        ResponseEntity<UserResponse> response = userController.register(request, null);
+
+        // then
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
+
+        // s3Uploader.upload는 호출되지 않아야 함
+        verify(s3Uploader, never()).upload(any());
+    }
+
+    @Test
+    @DisplayName("회원가입 성공 - 이미지 파일은 있지만 내용이 비어 있음")
+    void register_success_with_empty_image() throws Exception {
+        UserRegisterRequest request = UserRegisterRequest.builder()
+                .email("emptyimage@example.com")
+                .password("securePassword")
+                .nickName("emptyuser")
+                .joinType(JoinType.LOCAL)
+                .keywords(List.of())
+                .build();
+
+        // 내용이 비어 있는 이미지 파일 생성
+        MockMultipartFile emptyImage = new MockMultipartFile(
+                "image", "empty.png", "image/png", new byte[0]  // 빈 byte 배열
+        );
+
+        String emptyImageUrl = "";  // 내용이 비어 있으므로 업로드하지 않음
+        UserResponse expectedResponse = UserResponse.builder()
+                .nickName("emptyuser")
+                .email("emptyimage@example.com")
+                .imageUrl(emptyImageUrl)
+                .joinType(JoinType.LOCAL)
+                .userKeywords(List.of())
+                .build();
+
+        // userService만 호출되며, s3Uploader.upload는 호출되지 않아야 함
+        when(userService.register(request, emptyImageUrl)).thenReturn(expectedResponse);
+
+        // when: 내용이 비어 있는 이미지 파일과 함께 회원가입 요청
+        ResponseEntity<UserResponse> response = userController.register(request, emptyImage);
+
+        // then
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
+        verify(s3Uploader, never()).upload(any());
+    }
+
+
+
+    @Test
+    @DisplayName("회원 탈퇴 성공")
     void deleteUser_success() throws Exception {
-        doNothing().when(userService).deleteUser(1L);
+        ResponseEntity<Void> response = userController.deleteUser(testUser);
 
-        mockMvc.perform(delete("/api/v1/users/1"))
-                .andExpect(status().isNoContent());
+        verify(userService).deleteUser(testUser.getId());
+        assertThat(response.getStatusCodeValue()).isEqualTo(204);
+    }
 
-        verify(userService, times(1)).deleteUser(1L);
+
+
+    @Test
+    @DisplayName("회원 복구")
+    void restore_user() {
+        Long userId = 1L;
+
+        ResponseEntity<Void> response = userController.restoreUser(userId);
+
+        verify(userService).restoreUser(userId);
+        assertThat(response.getStatusCodeValue()).isEqualTo(204);
     }
 
     @Test
-    @DisplayName("회원복구 성공")
-    void restoreUser_success() throws Exception {
-        doNothing().when(userService).restoreUser(1L);
+    @DisplayName("프로필 조회 성공")
+    void get_my_profile() {
+        List<UserKeyword> mockKeywords = List.of(
+                UserKeyword.builder().id(1L).build(),
+                UserKeyword.builder().id(2L).build()
+        );
 
-        mockMvc.perform(put("/api/v1/users/1"))
-                .andExpect(status().isNoContent());
+        testUser = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickName("tester")
+                .imageUrl("https://img.com/profile.png")
+                .joinType(JoinType.LOCAL)
+                .userKeywords(mockKeywords)
+                .build();
 
-        verify(userService, times(1)).restoreUser(1L);
+        UserProfileResponse expectedResponse = UserProfileResponse.builder()
+                .id(testUser.getId())
+                .nickName(testUser.getNickName())
+                .email(testUser.getEmail())
+                .imageUrl(testUser.getImageUrl())
+                .joinType(testUser.getJoinType())
+                .keywordIds(List.of(1L, 2L))
+                .bookmarkCount(2)
+                .reviewCount(1)
+                .build();
+
+        when(userService.getProfile(testUser.getId())).thenReturn(expectedResponse);
+
+        ResponseEntity<UserProfileResponse> response = userController.getMyProfile(testUser);
+
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+        assertThat(response.getBody()).isEqualTo(expectedResponse);
     }
+
+    @Test
+    @DisplayName("프로필 수정 성공")
+    void updateProfile_success() throws Exception {
+        String newNickName = "newName";
+        MockMultipartFile newImage = new MockMultipartFile(
+                "image", "new.png", "image/png", "new-image".getBytes()
+        );
+
+        ResponseEntity<Void> response = userController.updateProfile(testUser, newNickName, newImage);
+
+        verify(userService).updateProfile(testUser.getId(), newNickName, newImage);
+        assertThat(response.getStatusCodeValue()).isEqualTo(204);
+    }
+
 }

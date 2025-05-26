@@ -11,7 +11,6 @@ import java.util.List;
 public record UserResponse(
         String nickName,
         String email,
-        String password,
         String imageUrl,
         JoinType joinType,
         List<UserKeyword> userKeywords

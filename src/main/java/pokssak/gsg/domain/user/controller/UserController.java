@@ -8,9 +8,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pokssak.gsg.common.s3.S3Uploader;
 import pokssak.gsg.domain.user.dto.UserProfileResponse;
-import pokssak.gsg.domain.user.dto.UserProfileUpdateRequest;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
 import pokssak.gsg.domain.user.dto.UserResponse;
+import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.UserService;
 
 
@@ -28,32 +28,17 @@ public class UserController {
             @RequestPart("request") UserRegisterRequest request,
             @RequestPart(value = "image", required = false) MultipartFile image
     ) {
-        String imageUrl = null;
+        String imageUrl = (image != null && !image.isEmpty()) ? s3Uploader.upload(image) : "";
 
-        // 이미지가 있는 경우 S3에 업로드
-        if (image != null && !image.isEmpty()) {
-            imageUrl = s3Uploader.upload(image);
-        }
-
-        // imageUrl을 포함한 새로운 request 생성
-        UserRegisterRequest updatedRequest = UserRegisterRequest.builder()
-                .nickName(request.nickName())
-                .email(request.email())
-                .password(request.password())
-                .joinType(request.joinType())
-                .keywords(request.keywords())
-                .imageUrl(imageUrl != null ? imageUrl : "")
-                .build();
-
-        UserResponse response = userService.register(updatedRequest);
+        UserResponse response = userService.register(request, imageUrl);
         return ResponseEntity.ok(response);
     }
 
 
     // 회원탈퇴 (soft delete)
-    @DeleteMapping("/users/{userId}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
-        userService.deleteUser(userId);
+    @DeleteMapping("/users")
+    public ResponseEntity<Void> deleteUser(@AuthenticationPrincipal User user) {
+        userService.deleteUser(user.getId());
         return ResponseEntity.noContent().build();
     }
 
@@ -64,21 +49,23 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-//    // 프로필 조회
-//    @GetMapping("/users/profile")
-//    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal CustomUserDetails userDetails) {
-//        UserProfileResponse profile = userService.getProfile(userDetails.getUser());
-//        return ResponseEntity.ok(profile);
-//    }
-//
-//    // 프로필 수정
-//    @PatchMapping("/users/profile")
-//    public ResponseEntity<Void> updateProfile(
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
-//            @RequestBody UserProfileUpdateRequest request) {
-//        userService.updateProfile(userDetails.getUser(), request);
-//        return ResponseEntity.noContent().build();
-//    }
+    // 프로필 조회
+    @GetMapping("/users/profile")
+    public ResponseEntity<UserProfileResponse> getMyProfile(@AuthenticationPrincipal User user) {
+        UserProfileResponse profile = userService.getProfile(user.getId());
+        return ResponseEntity.ok(profile);
+    }
+
+    // 프로필 수정
+    @PutMapping(value = "/users/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateProfile(
+            @AuthenticationPrincipal User user,
+            @RequestPart("nickName") String nickName,
+            @RequestPart(value = "image", required = false) MultipartFile image) {
+
+        userService.updateProfile(user.getId(), nickName, image);
+        return ResponseEntity.noContent().build();
+    }
 
 
 }

@@ -26,20 +26,22 @@ public class Cafe extends BaseEntity {
 
     private String openTime;
 
-    private BigDecimal rate;
+    private BigDecimal rating;
 
-    private Integer rateCount;
+    private Integer ratingCount;
 
-    private String imgUrl;
+    private String imageUrl;
 
     private String address;
 
     private String zipcode;
 
-    private BigDecimal x;
-    private BigDecimal y;
+    @Column(columnDefinition = "DECIMAL(3,13)")
+    private BigDecimal lat;
+    @Column(columnDefinition = "DECIMAL(3,13)")
+    private BigDecimal lon;
 
-    private String phone_number;
+    private String phoneNumber;
 
 
 }

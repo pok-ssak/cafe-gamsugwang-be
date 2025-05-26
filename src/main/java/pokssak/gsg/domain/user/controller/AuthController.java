@@ -29,4 +29,9 @@ public class AuthController {
     public ResponseEntity<?> localLogin(@RequestBody LoginRequestDto loginRequestDto) {
         return ResponseEntity.ok(ApiResponse.ok(authService.localLogin(loginRequestDto)));
     }
+
+    @PostMapping("logout")
+    public ResponseEntity<?> localLogout(@RequestBody LoginRequestDto loginRequestDto) {
+        return ResponseEntity.ok(ApiResponse.ok(null));
+    }
 }

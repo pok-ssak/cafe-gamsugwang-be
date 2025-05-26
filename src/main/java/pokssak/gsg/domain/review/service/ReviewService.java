@@ -31,18 +31,23 @@ public class ReviewService {
     private final CafeService cafeService;
 
     /** 리뷰 전체 조회 */
+    @Transactional
     public Page<ReviewResponse> getReviews(User user, Pageable pageable) {
+        user = userService.getUserById(user.getId());
         log.info("리뷰 조회 pageable={}", pageable);
         Set<Long> likedReviewIds = (user == null) ? Collections.emptySet() // 조회 줄이기
                 : user.getLikedReviews().stream()
                 .map(reviewLike -> reviewLike.getReview().getId())
                 .collect(Collectors.toSet());
         return reviewRepository.findAll(pageable)
+//        return reviewRepository.findAllWith(pageable)
                 .map(review -> ReviewResponse.from(review, likedReviewIds.contains(review.getId())));
     }
 
     /** 카페별 리뷰 전체 조회 */
+    @Transactional
     public Page<ReviewResponse> getReviews(Long cafeId, User user, Pageable pageable) {
+        user = userService.getUserById(user.getId());
         log.info("리뷰 카페별 조회 cafeId={}, pageable={}", cafeId, pageable);
         Set<Long> likedReviewIds = (user == null) ? Collections.emptySet()
                 : user.getLikedReviews().stream()
@@ -53,7 +58,9 @@ public class ReviewService {
     }
 
     /** 리뷰 상세 조회 */
+    @Transactional
     public ReviewResponse getReviewById(User user, Long reviewId) {
+        user = userService.getUserById(user.getId());
         log.info("리뷰 상세 조회 reviewId={}", reviewId);
         var liked = user == null ? false : user.hasLiked(reviewId);
         var review = reviewRepository.findById(reviewId)

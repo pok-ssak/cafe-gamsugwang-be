@@ -66,7 +66,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(result.getSize()).isEqualTo(1);
-            assertThat(result.getContent().get(0).reviewId()).isEqualTo(review.getId());
+            assertThat(result.getContent().get(0).id()).isEqualTo(review.getId());
         }
 
         @Test
@@ -81,7 +81,7 @@ class ReviewServiceTest {
 
             // then
             assertThat(response.getSize()).isEqualTo(1);
-            assertThat(response.getContent().get(0).reviewId()).isEqualTo(review.getId());
+            assertThat(response.getContent().get(0).id()).isEqualTo(review.getId());
         }
 
         // 이런경우도 해야하나?
@@ -123,7 +123,7 @@ class ReviewServiceTest {
             var result = reviewService.getReviewById(user, reviewId);
 
             // then
-            assertThat(result.reviewId())
+            assertThat(result.id())
                     .isEqualTo(reviewId);
         }
 

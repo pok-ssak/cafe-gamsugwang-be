@@ -27,7 +27,7 @@ public class FeedController {
     }
 
     // 특정 유저 피드 페이징 조회
-    @GetMapping("/user")
+    @GetMapping
     public ResponseEntity<Page<FeedResponse>> getUserFeeds(
             @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
@@ -48,14 +48,14 @@ public class FeedController {
     }
 
     // 피드 일괄 읽음 처리
-    @PutMapping("/read")
+    @PutMapping("/read-all")
     public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal User user) {
         feedService.markAllAsRead(user.getId());
         return ResponseEntity.ok().build();
     }
 
     // 안 읽은 피드 카운트 조회
-    @GetMapping("/user/{userId}/unread-count")
+    @GetMapping("/unread-count")
     public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal User user) {
         long count = feedService.getUnreadCount(user.getId());
         return ResponseEntity.ok(count);

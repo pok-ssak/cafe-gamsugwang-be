@@ -27,7 +27,7 @@ public class ReviewLikeService {
 
     /** 리뷰 좋아요 토글 */
     @Transactional
-    public boolean toggle(Long userId, Long reviewId) {
+    public Long toggle(Long userId, Long reviewId) {
         var user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
         var review = reviewRepository.findById(reviewId)
@@ -42,7 +42,7 @@ public class ReviewLikeService {
             redisTemplate.opsForValue().decrement(likeCountKey);
             review.updateLikeCount(Math.max(0, review.getLikeCount() - 1));
             log.info("리뷰 좋아요 취소 userId={} reviewId={}", user.getId(), reviewId);
-            return false;
+            return review.getLikeCount();
         } else {
             // 좋아요 추가
             var reviewLike = ReviewLike.builder()
@@ -53,7 +53,7 @@ public class ReviewLikeService {
             redisTemplate.opsForValue().increment(likeCountKey);
             review.updateLikeCount(review.getLikeCount() + 1);
             log.info("리뷰 좋아요 userId={} reviewId={}", user.getId(), reviewId);
-            return true;
+            return review.getLikeCount();
         }
     }
 }

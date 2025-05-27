@@ -18,7 +18,7 @@ import pokssak.gsg.domain.cafe.entity.Cafe;
 public class Bookmark extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

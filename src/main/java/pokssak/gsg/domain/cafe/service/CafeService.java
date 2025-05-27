@@ -7,8 +7,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
+import pokssak.gsg.domain.cafe.dto.getCafeResponse;
+import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.cafe.entity.CafeDocument;
+import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
+import pokssak.gsg.domain.cafe.repository.CafeRepository;
 
 import java.util.List;
 import pokssak.gsg.domain.cafe.entity.Cafe;
@@ -71,4 +77,19 @@ public class CafeService {
     public Page<Cafe> getCafes(Pageable pageable) {
         return cafeRepository.findAll(pageable);
     }
+
+
+    public getCafeResponse getCafe(Long cafeId) {
+        log.info("cafeId: {}", cafeId);
+        Cafe cafe = cafeRepository.findById(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
+        return getCafeResponse.from(cafe);
+        //return getCafeResponse.from(cafe);
+    }
+
+    public CafeDocument getCafeDocument(Long cafeId) {
+        log.info("cafeId: {}", cafeId);
+        CafeDocument cafeDocument = cafeESRepository.findById(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
+        return cafeDocument;
+    }
 }
+

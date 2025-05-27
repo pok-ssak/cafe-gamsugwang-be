@@ -9,6 +9,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.common.dto.ApiResponse;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
+import pokssak.gsg.domain.cafe.dto.getCafeResponse;
 import pokssak.gsg.domain.cafe.service.CafeService;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
@@ -22,6 +23,18 @@ import java.util.List;
 public class CafeController {
     private final CafeService cafeService;
     private final ReviewService reviewService;
+
+
+    /**
+     * 카페 상세 조회
+     * @param cafeId
+     * @return
+     */
+    @GetMapping("/{cafeId}")
+    public ResponseEntity<?> getCafe(@PathVariable Long cafeId) {
+        getCafeResponse cafe = cafeService.getCafe(cafeId);
+        return ResponseEntity.ok(ApiResponse.ok(cafe));
+    }
 
     @GetMapping("/auto-complete")
     public ResponseEntity<?> autoComplete(@RequestParam String keyword, @RequestParam(required = false, defaultValue = "10") int limit) {

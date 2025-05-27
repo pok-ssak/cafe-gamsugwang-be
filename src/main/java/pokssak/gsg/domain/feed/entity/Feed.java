@@ -29,8 +29,4 @@ public class Feed extends BaseEntity {
 
     @Builder.Default
     private boolean isRead = false;
-
-    public void markAsRead() {
-        this.isRead = true;
-    }
 }

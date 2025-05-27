@@ -24,7 +24,7 @@ public class ReviewLikeController implements ReviewLikeControllerApi {
             @AuthenticationPrincipal User user,
             @PathVariable("reviewId") Long reviewId
     ) {
-        reviewLikeService.toggle(user.getId(), reviewId);
-        return ResponseEntity.ok(ApiResponse.ok(null));
+        var result = reviewLikeService.toggle(user.getId(), reviewId);
+        return ResponseEntity.ok(ApiResponse.ok(result));
     }
 }

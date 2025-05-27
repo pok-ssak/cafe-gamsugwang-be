@@ -43,7 +43,7 @@ public class UserController {
     }
 
     // 회원복구
-    @PutMapping("/users/{userId}")
+    @PutMapping("/users/{userId}/restore")
     public ResponseEntity<Void> restoreUser(@PathVariable Long userId) {
         userService.restoreUser(userId);
         return ResponseEntity.noContent().build();

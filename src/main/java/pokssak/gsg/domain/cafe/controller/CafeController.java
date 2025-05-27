@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.common.dto.ApiResponse;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
 import pokssak.gsg.domain.cafe.dto.GetCafeResponse;
+import pokssak.gsg.domain.cafe.dto.SuggestRequest;
 import pokssak.gsg.domain.cafe.service.CafeService;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
@@ -34,6 +35,17 @@ public class CafeController {
     public ResponseEntity<?> getCafe(@PathVariable Long cafeId) {
         GetCafeResponse cafe = cafeService.getCafe(cafeId);
         return ResponseEntity.ok(ApiResponse.ok(cafe));
+    }
+
+    // 카페 수정제안
+    @PutMapping("/{cafeId}/suggest")
+    public ResponseEntity<?> suggestCafe(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long cafeId,
+            @RequestBody SuggestRequest request) {
+        log.info("수정 제안 요청 userId: {}, cafeId: {}", user.getId(), cafeId);
+        cafeService.suggestCafe(user.getId(), cafeId, request);
+        return ResponseEntity.ok(ApiResponse.ok("수정 제안 완료"));
     }
 
     @GetMapping("/auto-complete")
@@ -88,4 +100,6 @@ public class CafeController {
         var result = cafeService.getCafes(pageable);
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
+
+
 }

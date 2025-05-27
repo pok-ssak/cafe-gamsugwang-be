@@ -10,11 +10,14 @@ import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
 import pokssak.gsg.domain.cafe.dto.GetCafeResponse;
+import pokssak.gsg.domain.cafe.dto.SuggestRequest;
 import pokssak.gsg.domain.cafe.entity.Cafe;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
+import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
+import pokssak.gsg.domain.cafe.repository.SuggestionRedisRepository;
 
 import java.util.List;
 
@@ -26,6 +29,7 @@ public class CafeService {
     private final CafeSearchService cafeSearchService;
     private final CafeESRepository cafeESRepository;
     private final CafeRepository cafeRepository;
+    private final SuggestionRedisRepository suggestionRedisRepository;
 
     public Cafe getCafeById(Long cafeId) {
         return cafeRepository.findById(cafeId).get();
@@ -89,6 +93,21 @@ public class CafeService {
         log.info("cafeId: {}", cafeId);
         CafeDocument cafeDocument = cafeESRepository.findById(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
         return cafeDocument;
+    }
+
+    public void suggestCafe(Long id, Long cafeId, SuggestRequest request) {
+        log.info("id: {}, cafeId: {}, suggestion: {}", id, cafeId, request);
+        Cafe oldCafe = cafeRepository.findByIdWithMenusAndKeywords(cafeId)
+                .orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
+
+        Cafe newCafe = SuggestRequest.toEntity(request);
+        Suggestion suggestion = Suggestion.builder()
+                .userId(id)
+                .oldCafe(oldCafe)
+                .cafe(newCafe)
+                .build();
+
+        suggestionRedisRepository.save(suggestion);
     }
 }
 

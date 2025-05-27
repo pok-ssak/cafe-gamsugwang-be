@@ -5,7 +5,10 @@ import lombok.*;
 import pokssak.gsg.common.entity.BaseEntity;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Table(name = "cafes")
 @Getter
@@ -44,7 +47,10 @@ public class Cafe extends BaseEntity {
     private String phoneNumber;
 
     @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Menu> menus;
+    private Set<Menu> menuList = new HashSet<>();
+
+    @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Keyword> keywordList = new HashSet<>();
 
 
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
-import pokssak.gsg.domain.cafe.dto.getCafeResponse;
+import pokssak.gsg.domain.cafe.dto.GetCafeResponse;
 import pokssak.gsg.domain.cafe.entity.Cafe;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
@@ -17,8 +17,6 @@ import pokssak.gsg.domain.cafe.repository.CafeESRepository;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
 
 import java.util.List;
-import pokssak.gsg.domain.cafe.entity.Cafe;
-import pokssak.gsg.domain.cafe.repository.CafeRepository;
 
 @Service
 @RequiredArgsConstructor
@@ -79,10 +77,11 @@ public class CafeService {
     }
 
 
-    public getCafeResponse getCafe(Long cafeId) {
+    public GetCafeResponse getCafe(Long cafeId) {
         log.info("cafeId: {}", cafeId);
-        Cafe cafe = cafeRepository.findById(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
-        return getCafeResponse.from(cafe);
+        Cafe cafe = cafeRepository.findByIdWithMenusAndKeywords(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
+
+        return GetCafeResponse.from(cafe);
         //return getCafeResponse.from(cafe);
     }
 

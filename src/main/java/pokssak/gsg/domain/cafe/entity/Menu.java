@@ -12,6 +12,7 @@ import pokssak.gsg.common.entity.BaseEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Table(name = "menus")
 public class Menu extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

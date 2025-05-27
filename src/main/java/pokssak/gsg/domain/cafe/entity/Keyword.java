@@ -12,7 +12,8 @@ import pokssak.gsg.common.entity.BaseEntity;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Keywords extends BaseEntity {
+@Table(name = "keywords")
+public class Keyword extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

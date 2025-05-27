@@ -6,11 +6,12 @@ import lombok.Setter;
 import pokssak.gsg.domain.cafe.entity.Cafe;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Getter
 @Setter
 @Builder
-public class getCafeResponse {
+public class GetCafeResponse {
     private Long Id;
     private String title;
     private String info;
@@ -23,10 +24,12 @@ public class getCafeResponse {
     private BigDecimal x;
     private BigDecimal y;
     private String phone_number;
+    private List<MenuResponse> menuList;
+    private List<KeywordResponse> keywordList;
 
 
-    public static getCafeResponse from(Cafe cafe) {
-        return getCafeResponse.builder()
+    public static GetCafeResponse from(Cafe cafe) {
+        return GetCafeResponse.builder()
                 .Id(cafe.getId())
                 .title(cafe.getTitle())
                 .info(cafe.getInfo())
@@ -39,6 +42,12 @@ public class getCafeResponse {
                 .x(cafe.getLat())
                 .y(cafe.getLon())
                 .phone_number(cafe.getPhoneNumber())
+                .menuList(cafe.getMenuList().stream()
+                        .map(MenuResponse::from)
+                        .toList())
+                .keywordList(cafe.getKeywordList().stream()
+                        .map(KeywordResponse::from)
+                        .toList())
                 .build();
     }
 }

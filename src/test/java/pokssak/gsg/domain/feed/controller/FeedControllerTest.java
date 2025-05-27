@@ -125,6 +125,24 @@ class FeedControllerTest {
     }
 
     @Test
+    void markAllAsRead_성공() {
+        ResponseEntity<Void> response = feedController.markAllAsRead(testUser);
+
+        verify(feedService).markAllAsRead(testUser.getId());
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+    }
+
+    @Test
+    void markAllAsRead_유저없음_예외() {
+        doThrow(new CustomException(UserErrorCode.NOT_FOUND))
+                .when(feedService).markAllAsRead(testUser.getId());
+
+        assertThrows(CustomException.class, () -> {
+            feedController.markAllAsRead(testUser);
+        });
+    }
+
+    @Test
     void getUnreadCount_성공() {
         when(feedService.getUnreadCount(1L)).thenReturn(3L);
 

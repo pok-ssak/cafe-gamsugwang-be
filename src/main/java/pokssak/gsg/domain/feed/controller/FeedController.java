@@ -47,6 +47,13 @@ public class FeedController {
         return ResponseEntity.ok().build();
     }
 
+    // 피드 일괄 읽음 처리
+    @PutMapping("/read")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal User user) {
+        feedService.markAllAsRead(user.getId());
+        return ResponseEntity.ok().build();
+    }
+
     // 안 읽은 피드 카운트 조회
     @GetMapping("/user/{userId}/unread-count")
     public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal User user) {

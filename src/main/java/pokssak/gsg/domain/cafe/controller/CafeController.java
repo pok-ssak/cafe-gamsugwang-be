@@ -75,7 +75,7 @@ public class CafeController {
                 results = cafeService.recommendByKeyword(keyword, limit);
                 break;
             case "hybrid":
-                results = cafeService.recommendByKeyword(keyword, limit);
+                results = cafeService.recommendByKeyword(keyword, limit); // 가중치 기능구현
                 break;
             default:
                 return ResponseEntity.badRequest().body("invalid option");

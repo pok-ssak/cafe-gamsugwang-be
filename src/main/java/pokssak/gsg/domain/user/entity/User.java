@@ -79,4 +79,8 @@ public class User extends BaseEntity implements UserDetails{
     public boolean hasLiked(Long reviewId) {
         return likedReviews.stream().anyMatch(reviewLike -> reviewLike.getReview().getId().equals(reviewId));
     }
+
+    public void updateProfileImage(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

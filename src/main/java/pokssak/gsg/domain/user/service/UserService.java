@@ -97,4 +97,18 @@ public class UserService{
         return userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
     }
+
+    // 프로필 이미지 수정
+    @Transactional
+    public void updateProfileImage(Long userId, MultipartFile image) {
+
+        log.info("프로필 이미지 수정 userId={}, imageName={}, imageType={}, imageSize={}"
+                ,image.getOriginalFilename(), image.getContentType(), image.getSize());
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
+
+        String imageUrl = s3Uploader.upload(image);
+        user.updateProfileImage(imageUrl);
+    }
 }

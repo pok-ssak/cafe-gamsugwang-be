@@ -18,12 +18,12 @@ public class GetCafeResponse {
     private String openTime;
     private BigDecimal rate;
     private Integer rateCount;
-    private String imgUrl;
+    private String imageUrl;
     private String address;
     private String zipcode;
-    private BigDecimal x;
-    private BigDecimal y;
-    private String phone_number;
+    private BigDecimal lat;
+    private BigDecimal lon;
+    private String phoneNumber;
     private List<MenuResponse> menuList;
     private List<KeywordResponse> keywordList;
 
@@ -36,12 +36,12 @@ public class GetCafeResponse {
                 .openTime(cafe.getOpenTime())
                 .rate(cafe.getRate())
                 .rateCount(cafe.getRateCount())
-                .imgUrl(cafe.getImageUrl())
+                .imageUrl(cafe.getImageUrl())
                 .address(cafe.getAddress())
                 .zipcode(cafe.getZipcode())
-                .x(cafe.getLat())
-                .y(cafe.getLon())
-                .phone_number(cafe.getPhoneNumber())
+                .lat(cafe.getLat())
+                .lon(cafe.getLon())
+                .phoneNumber(cafe.getPhoneNumber())
                 .menuList(cafe.getMenuList().stream()
                         .map(MenuResponse::from)
                         .toList())

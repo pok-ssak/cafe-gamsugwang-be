@@ -93,7 +93,7 @@ public class CafeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    @GetMapping("")
+    @GetMapping
     public ResponseEntity<?> getCafes(
             Pageable pageable
     ) {

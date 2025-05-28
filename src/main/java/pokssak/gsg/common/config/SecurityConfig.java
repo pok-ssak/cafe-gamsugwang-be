@@ -42,7 +42,7 @@ public class SecurityConfig {
 
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/v1/auth/**").permitAll()
-                    .requestMatchers("/api/v1/cafes/**").permitAll()
+                .requestMatchers("/api/v1/cafes/**").permitAll()
                 .anyRequest().authenticated()
             )
 

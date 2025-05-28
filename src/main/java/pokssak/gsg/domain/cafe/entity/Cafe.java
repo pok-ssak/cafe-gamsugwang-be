@@ -2,6 +2,7 @@ package pokssak.gsg.domain.cafe.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.BatchSize;
 import pokssak.gsg.common.entity.BaseEntity;
 
 import java.math.BigDecimal;
@@ -12,8 +13,8 @@ import java.util.Set;
 
 @Table(name = "cafes")
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Builder
 public class Cafe extends BaseEntity {
@@ -46,11 +47,24 @@ public class Cafe extends BaseEntity {
 
     private String phoneNumber;
 
-    @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     private Set<Menu> menuList = new HashSet<>();
 
-    @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @BatchSize(size = 50)
     private Set<Keyword> keywordList = new HashSet<>();
 
 
+    public void addMenu(Menu menu) {
+        menuList.add(menu);
+        menu.updateCafe(this);
+    }
+
+    public void addKeyword(Keyword keyword) {
+        keywordList.add(keyword);
+        keyword.updateCafe(this);
+    }
 }

@@ -19,8 +19,9 @@ public class S3Uploader {
     private String bucket;
 
     public String upload(MultipartFile file) {
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+        String fileName;
         try {
+            fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
             ObjectMetadata metadata = new ObjectMetadata();
             metadata.setContentType(file.getContentType());
             metadata.setContentLength(file.getSize());
@@ -28,7 +29,6 @@ public class S3Uploader {
         } catch (IOException e) {
             throw new RuntimeException("S3 업로드 중 오류 발생", e);
         }
-
         return amazonS3.getUrl(bucket, fileName).toString(); // S3 URL 리턴
     }
 }

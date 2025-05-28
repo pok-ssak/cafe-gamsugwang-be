@@ -28,8 +28,8 @@ public class SuggestRequest {
     private BigDecimal lat;
     private BigDecimal lon;
     private String phoneNumber;
-    private Set<Menu> menuList = new HashSet<>();
-    private Set<Keyword> keywordList = new HashSet<>();
+    private Set<Menu> menuList;
+    private Set<Keyword> keywordList;
 
 
     public static Cafe toEntity(SuggestRequest request) {

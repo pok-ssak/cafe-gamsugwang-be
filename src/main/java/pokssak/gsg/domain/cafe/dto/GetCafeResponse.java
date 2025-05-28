@@ -21,8 +21,8 @@ public class GetCafeResponse {
     private String imgUrl;
     private String address;
     private String zipcode;
-    private BigDecimal x;
-    private BigDecimal y;
+    private BigDecimal lat;
+    private BigDecimal lon;
     private String phone_number;
     private List<MenuResponse> menuList;
     private List<KeywordResponse> keywordList;
@@ -39,8 +39,8 @@ public class GetCafeResponse {
                 .imgUrl(cafe.getImageUrl())
                 .address(cafe.getAddress())
                 .zipcode(cafe.getZipcode())
-                .x(cafe.getLat())
-                .y(cafe.getLon())
+                .lat(cafe.getLat())
+                .lon(cafe.getLon())
                 .phone_number(cafe.getPhoneNumber())
                 .menuList(cafe.getMenuList().stream()
                         .map(MenuResponse::from)

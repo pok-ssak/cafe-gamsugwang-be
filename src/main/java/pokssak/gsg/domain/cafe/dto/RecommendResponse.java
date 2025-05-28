@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 
@@ -16,7 +17,7 @@ public class RecommendResponse {
     private String imgUrl;
     private String address;
     private Integer reviewCount;
-    private Double rate;
+    private BigDecimal rate;
     private List<String> keywords;
 
 

@@ -231,4 +231,18 @@ class UserControllerTest {
         assertThat(response.getStatusCodeValue()).isEqualTo(204);
     }
 
+    @Test
+    @DisplayName("프로필 이미지 수정 성공")
+    void updateProfileImage_success() {
+        MockMultipartFile newImage = new MockMultipartFile(
+                "image", "new.png", "image/png", "new-image".getBytes()
+        );
+
+        ResponseEntity<Void> response = userController.updateProfileImage(testUser, newImage);
+
+        verify(userService).updateProfileImage(testUser.getId(), newImage);
+        assertThat(response.getStatusCodeValue()).isEqualTo(204);
+    }
+
+
 }

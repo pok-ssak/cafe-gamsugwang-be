@@ -25,4 +25,11 @@ public class Menu extends BaseEntity {
 
     @ManyToOne
     private Cafe cafe;
+
+    public void updateCafe(Cafe cafe) {
+        this.cafe = cafe;
+        if (!cafe.getMenuList().contains(this)) {
+            cafe.addMenu(this);
+        }
+    }
 }

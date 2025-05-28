@@ -22,4 +22,11 @@ public class Keyword extends BaseEntity {
 
     @ManyToOne
     private Cafe cafe;
+
+    public void updateCafe(Cafe cafe) {
+        this.cafe = cafe;
+        if (!cafe.getKeywordList().contains(this)) {
+            cafe.addKeyword(this);
+        }
+    }
 }

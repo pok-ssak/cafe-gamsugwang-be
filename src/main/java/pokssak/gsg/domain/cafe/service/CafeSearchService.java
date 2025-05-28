@@ -1,9 +1,7 @@
 package pokssak.gsg.domain.cafe.service;
 
 import co.elastic.clients.elasticsearch._types.LatLonGeoLocation;
-import co.elastic.clients.elasticsearch._types.SortOrder;
 import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
 import co.elastic.clients.elasticsearch.core.search.FieldCollapse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,13 +15,12 @@ import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
 import java.util.ArrayList;
 import java.util.List;
-import co.elastic.clients.elasticsearch._types.GeoLocation;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j

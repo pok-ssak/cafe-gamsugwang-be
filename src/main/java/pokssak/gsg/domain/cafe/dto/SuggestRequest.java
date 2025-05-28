@@ -9,7 +9,6 @@ import pokssak.gsg.domain.cafe.entity.Keyword;
 import pokssak.gsg.domain.cafe.entity.Menu;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 
 @Getter
@@ -21,7 +20,7 @@ public class SuggestRequest {
     private String info;
     private String openTime;
     private BigDecimal rate;
-    private Integer rateCount;
+    private Integer reviewCount;
     private String imageUrl;
     private String address;
     private String zipcode;
@@ -38,7 +37,7 @@ public class SuggestRequest {
                 .info(request.getInfo())
                 .openTime(request.getOpenTime())
                 .rate(request.getRate())
-                .rateCount(request.getRateCount())
+                .rateCount(request.getReviewCount())
                 .imageUrl(request.getImageUrl())
                 .address(request.getAddress())
                 .zipcode(request.getZipcode())

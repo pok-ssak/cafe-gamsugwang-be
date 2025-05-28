@@ -63,19 +63,25 @@ public class CafeBatchConfig {
      */
     @Bean
     public ItemProcessor<Cafe, CafeDocument> cafeProcessor() {
+
+
+
         return cafe -> {
+            GeoPoint geoPoint = new GeoPoint(cafe.getLat().doubleValue(), cafe.getLon().doubleValue());
+            log.info("Processing Cafe: {}, Location: {}", cafe.getId(), geoPoint);
             return CafeDocument.builder()
                     .id(cafe.getId())
                     .title(cafe.getTitle())
-                    .info(cafe.getInfo())
                     .rate(cafe.getRate())
+                    .imgUrl(cafe.getImageUrl())
+                    .reviewCount(cafe.getRateCount())
                     .createdAt(cafe.getCreatedAt().format(ES_DATE_FORMAT))
                     .modifiedAt(cafe.getModifiedAt().format(ES_DATE_FORMAT))
                     .address(CafeDocument.Address.builder()
                             .street(cafe.getAddress())
                             .zipCode(cafe.getZipcode())
+                            .location(new GeoPoint(cafe.getLat().doubleValue(), cafe.getLon().doubleValue()))
                             .build())
-                    .location(new GeoPoint(cafe.getLat().doubleValue(), cafe.getLon().doubleValue()))
                     .menus(cafe.getMenuList().stream()
                             .map(m -> CafeDocument.Menu.builder()
                                     .keyword(m.getName())

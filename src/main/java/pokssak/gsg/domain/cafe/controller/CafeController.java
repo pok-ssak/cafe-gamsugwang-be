@@ -3,14 +3,13 @@ package pokssak.gsg.domain.cafe.controller;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.common.dto.ApiResponse;
-import pokssak.gsg.domain.cafe.dto.RecommendResponse;
-import pokssak.gsg.domain.cafe.dto.GetCafeResponse;
-import pokssak.gsg.domain.cafe.dto.SuggestRequest;
+import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.service.CafeService;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
@@ -24,6 +23,7 @@ import java.util.List;
 public class CafeController {
     private final CafeService cafeService;
     private final ReviewService reviewService;
+    private final EmbeddingModel embeddingModel;
 
 
     /**
@@ -49,11 +49,18 @@ public class CafeController {
     }
 
     @GetMapping("/auto-complete")
-    public ResponseEntity<?> autoComplete(@RequestParam String keyword, @RequestParam(required = false, defaultValue = "10") int limit) {
-        List<String> titles = cafeService.autoComplete(keyword, limit);
-        ApiResponse.ok(titles);
+    public ResponseEntity<List<AutoCompleteResponse>> autoComplete(@RequestParam String keyword, @RequestParam(required = false, defaultValue = "10") int limit) {
+        List<AutoCompleteResponse> response = cafeService.autoComplete(keyword, limit);
+        ApiResponse.ok(response);
+        return ResponseEntity.ok(response);
+    }
 
-        return ResponseEntity.ok(titles);
+    @GetMapping("/search")
+    public ResponseEntity<?> searchCafes(@RequestParam String query, @RequestParam(required = false, defaultValue = "50") int limit) {
+        log.info("search query: {}, limit: {}", query, limit);
+        List<SearchCafeResponse> searchCafeResponses = cafeService.searchCafes(query, limit);
+        return ResponseEntity.ok(ApiResponse.ok(searchCafeResponses));
+
     }
 
     @GetMapping("/recommend")
@@ -99,6 +106,13 @@ public class CafeController {
     ) {
         var result = cafeService.getCafes(pageable);
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    @GetMapping("/embedding")
+    public ResponseEntity<?> getEmbeddingVector(@RequestParam String keyword) {
+        log.info("keyword: {}", keyword);
+        float[] embed = embeddingModel.embed(keyword);
+        return ResponseEntity.ok(ApiResponse.ok(embed));
     }
 
 

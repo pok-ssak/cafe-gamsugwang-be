@@ -14,10 +14,9 @@ import java.util.List;
 public class GetCafeResponse {
     private Long Id;
     private String title;
-    private String info;
     private String openTime;
     private BigDecimal rate;
-    private Integer rateCount;
+    private Integer reviewCount;
     private String imageUrl;
     private String address;
     private String zipcode;
@@ -32,10 +31,9 @@ public class GetCafeResponse {
         return GetCafeResponse.builder()
                 .Id(cafe.getId())
                 .title(cafe.getTitle())
-                .info(cafe.getInfo())
                 .openTime(cafe.getOpenTime())
                 .rate(cafe.getRate())
-                .rateCount(cafe.getRateCount())
+                .reviewCount(cafe.getRateCount())
                 .imageUrl(cafe.getImageUrl())
                 .address(cafe.getAddress())
                 .zipcode(cafe.getZipcode())

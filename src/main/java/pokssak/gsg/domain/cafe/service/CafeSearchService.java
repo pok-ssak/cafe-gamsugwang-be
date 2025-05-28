@@ -16,7 +16,9 @@ import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
+import pokssak.gsg.domain.cafe.dto.AutoCompleteResponse;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
+import pokssak.gsg.domain.cafe.dto.SearchCafeResponse;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +36,7 @@ public class CafeSearchService {
      * @param size
      * @return
      */
-    public List<String> suggestTitleByKeyword(String keyword, int size) {
+    public List<AutoCompleteResponse> suggestTitleByKeyword(String keyword, int size) {
         NativeQuery query = NativeQuery.builder()
                 // 필드 선택
                 .withQuery(q -> q.match(m -> m
@@ -46,15 +48,16 @@ public class CafeSearchService {
 
                 // 정렬
                 .withSort(Sort.by(Sort.Order.desc("_score")))
-                .withSourceFilter(new FetchSourceFilter(new String[]{"title"}, null))
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title","_id"}, null))
                 .withFieldCollapse(FieldCollapse.of(fc -> fc.field("title.keyword")))
                 .build();
 
+        log.info("Suggesting titles for keyword: {}", keyword);
         SearchHits<CafeDocument> hits = operations.search(query, CafeDocument.class);
 
         return hits.stream()
                 .map(SearchHit::getContent)
-                .map(CafeDocument::getTitle)
+                .map(c -> AutoCompleteResponse.from(c.getId(), c.getTitle()))
                 .toList();
     }
 
@@ -135,7 +138,7 @@ public class CafeSearchService {
                                                         ))
                                         )))))))
                 .withPageable(PageRequest.of(0, size))
-                .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address"}, null))
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address","reviewCount","imgUrl"}, null))
                 .build();
 
         SearchHits<CafeDocument> hits = operations.search(nativeQuery, CafeDocument.class);
@@ -143,6 +146,25 @@ public class CafeSearchService {
         return hits.stream()
                 .map(SearchHit::getContent)
                 .map(RecommendResponse::from)
+                .toList();
+    }
+
+    public List<SearchCafeResponse> searchByTitle(String query, int limit) {
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(q -> q.match(m -> m
+                        .field("title")
+                        .query(query)
+                        .operator(Operator.And)))
+                .withPageable(PageRequest.of(0, 50))
+                .withSort(Sort.by(Sort.Order.desc("reviewCount")))
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title", "keywords", "rate", "address", "reviewCount","imgUrl"}, null))
+                .build();
+
+        SearchHits<CafeDocument> hits = operations.search(nativeQuery, CafeDocument.class);
+        log.info("hits: {}", hits);
+        return hits.stream()
+                .map(SearchHit::getContent)
+                .map(SearchCafeResponse::from)
                 .toList();
     }
 }

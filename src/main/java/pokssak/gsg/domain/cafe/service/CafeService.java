@@ -76,8 +76,9 @@ public class CafeService {
         return cafeDocuments;
     }
 
-    public Page<Cafe> getCafes(Pageable pageable) {
-        return cafeRepository.findAll(pageable);
+    public Page<GetCafeResponse> getCafes(Pageable pageable) {
+        var result = cafeRepository.findAll(pageable).map(GetCafeResponse::from);
+        return result;
     }
 
 

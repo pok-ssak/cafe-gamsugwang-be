@@ -13,23 +13,27 @@ import java.util.List;
 @Setter
 @Builder
 public class RecommendResponse {
+    private Long id;
     private String title;
-    private String imgUrl;
+    private String imageUrl;
     private String address;
     private Integer reviewCount;
     private BigDecimal rate;
     private List<String> keywords;
-
-
+    private Double lat;
+    private Double lon;
 
     public static RecommendResponse from(CafeDocument cafeDocument) {
         return RecommendResponse.builder()
+                .id(cafeDocument.getId())
                 .title(cafeDocument.getTitle())
-                .imgUrl(cafeDocument.getImgUrl())
+                .imageUrl(cafeDocument.getImgUrl())
                 .address(cafeDocument.getAddress().getStreet())
                 .reviewCount(cafeDocument.getReviewCount())
                 .rate(cafeDocument.getRate())
                 .keywords(cafeDocument.getKeywords().stream().map(CafeDocument.Keyword::getKey).toList())
+                .lat(cafeDocument.getAddress().getLocation().getLat())
+                .lon(cafeDocument.getAddress().getLocation().getLon())
                 .build();
     }
 }

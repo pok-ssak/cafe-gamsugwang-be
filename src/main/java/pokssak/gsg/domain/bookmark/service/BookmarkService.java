@@ -1,6 +1,7 @@
 package pokssak.gsg.domain.bookmark.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
@@ -17,6 +18,7 @@ import pokssak.gsg.domain.user.repository.UserRepository;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
@@ -42,6 +44,7 @@ public class BookmarkService {
                 .build();
 
         bookmarkRepository.save(bookmark);
+        log.info("관심목록 추가 성공 - userId={} cafeId={}", userId, cafeId);
     }
 
     @Transactional
@@ -52,6 +55,7 @@ public class BookmarkService {
                 .orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
 
         bookmarkRepository.deleteByUserAndCafe(user, cafe);
+        log.info("관심목록 제거 성공 - userId={} cafeId={}", userId, cafeId);
     }
 
     @Transactional(readOnly = true)

@@ -24,13 +24,17 @@ class CustomUserDetailsServiceTest {
     @Test
     void testLoadUserByUsername() {
         String email = "example@google.com";
+
+        Long id = 1L;
+
         User user = User.builder()
+            .id(1L)
             .email(email)
             .build();
 
-        Mockito.when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.findById(id)).thenReturn(Optional.of(user));
 
-        User find = customUserDetailsService.loadUserByUsername(email);
+        User find = customUserDetailsService.loadUserByUsername(id.toString());
 
         assertThat(find.getUsername()).isEqualTo(email);
     }

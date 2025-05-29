@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -255,4 +256,46 @@ class UserServiceTest {
         verify(userRepository).findById(1L);
     }
 
+    @Test
+    @DisplayName("프로필 사진 수정 성공")
+    void updateProfileImage_success() {
+        // given
+        var expectUrl = "http://image.com/profile.jpg";
+        var file = new MockMultipartFile(
+                "image",
+                "hello.jpg",
+                "image/jpg",
+                new byte[0]
+        );
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(s3Uploader.upload(any(MultipartFile.class))).thenReturn(expectUrl);
+        // when
+        userService.updateProfileImage(1L, file);
+
+        // then
+        assertThat(user.getImageUrl()).isEqualTo(expectUrl); // 기존 유지
+        verify(userRepository).findById(1L);
+    }
+
+    @Test
+    @DisplayName("프로필 사진 수정 실패 - 사용자 없음")
+    void updateProfileImage_fail_notFound() {
+        // given
+        var file = new MockMultipartFile(
+                "image",
+                "hello.jpg",
+                "image/jpg",
+                new byte[0]
+        );
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        // when
+        CustomException exception = assertThrows(CustomException.class, () -> {
+            userService.updateProfileImage(1L, file);
+        });
+
+        // then
+        assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.NOT_FOUND);
+        verify(userRepository).findById(1L);
+    }
 }

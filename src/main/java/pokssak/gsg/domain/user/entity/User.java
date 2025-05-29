@@ -94,4 +94,8 @@ public class User extends BaseEntity implements UserDetails {
     public void updateOAuthUser(OAuthSignUpRequestDto oAuthSignUpRequestDto) {
         this.nickName = oAuthSignUpRequestDto.nickname();
     }
+
+    public void updateProfileImage(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
 }

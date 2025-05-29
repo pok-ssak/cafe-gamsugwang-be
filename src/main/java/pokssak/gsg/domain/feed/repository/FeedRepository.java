@@ -19,4 +19,9 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
     @Modifying
     @Query("UPDATE Feed f SET f.isRead = true WHERE f.id = :feedId")
     void markAsReadById(@Param("feedId") Long feedId);
+
+    @Modifying
+    @Query("UPDATE Feed f SET f.isRead = true WHERE f.user.id = :userId AND f.isRead = false")
+    void markAllAsReadByUserId(@Param("userId") Long userId);
+
 }

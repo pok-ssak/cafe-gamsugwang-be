@@ -5,22 +5,22 @@ import pokssak.gsg.domain.review.entity.Review;
 
 @Builder
 public record ReviewResponse(
-        Long reviewId,
+        Long id,
         String content,
-        String userNickName,
+        String nickname,
         String imageUrl,
-        int rate,
+        float rating,
         boolean likedByUser,
         long likeCount
 
 ){
     public static ReviewResponse from(Review review, boolean likedByUser) {
         return ReviewResponse.builder()
-                .reviewId(review.getId())
+                .id(review.getId())
                 .content(review.getContent())
-                .userNickName(review.getUser().getNickName())
+                .nickname(review.getUser().getNickName())
                 .imageUrl(review.getImageUrl())
-                .rate(review.getRate())
+                .rating(review.getRating())
                 .likedByUser(likedByUser) // 엔티티에서 직접 가져오는 값이 아님.
                 .likeCount(review.getLikeCount())
                 .build();

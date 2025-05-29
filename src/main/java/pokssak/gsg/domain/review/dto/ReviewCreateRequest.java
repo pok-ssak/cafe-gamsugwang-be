@@ -8,6 +8,6 @@ public record ReviewCreateRequest(
         Long cafeId,
         String content,
         String imageUrl,
-        int rate
+        float rating
 ){
 }

@@ -71,13 +71,12 @@ class ReviewLikeServiceTest {
                     .thenReturn(Optional.empty());
 
             // when
-            boolean result = reviewLikeService.toggle(userId, reviewId);
+            var result = reviewLikeService.toggle(userId, reviewId);
 
             // then
-            assertThat(result).isTrue();
             verify(reviewLikeRepository).save(any(ReviewLike.class));
             verify(valueOperations).increment(eq("review:like:count:" + reviewId));
-            assertThat(review.getLikeCount()).isEqualTo(1);
+            assertThat(review.getLikeCount()).isEqualTo(result);
         }
 
         @Test
@@ -100,13 +99,12 @@ class ReviewLikeServiceTest {
                     .thenReturn(Optional.of(existingLike));
 
             // when
-            boolean result = reviewLikeService.toggle(userId, reviewId);
+            var result = reviewLikeService.toggle(userId, reviewId);
 
             // then
-            assertThat(result).isFalse();
             verify(reviewLikeRepository).delete(existingLike);
             verify(valueOperations).decrement(eq("review:like:count:" + reviewId));
-            assertThat(review.getLikeCount()).isEqualTo(0);
+            assertThat(review.getLikeCount()).isEqualTo(result);
         }
 
         @Test

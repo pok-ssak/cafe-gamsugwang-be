@@ -85,7 +85,7 @@ public class ReviewService {
 
         var review = Review.builder()
                 .content(reviewCreateRequest.content())
-                .rate(reviewCreateRequest.rate())
+                .rating(reviewCreateRequest.rating())
                 .imageUrl(reviewCreateRequest.imageUrl())
                 .cafe(cafe)
                 .user(user)

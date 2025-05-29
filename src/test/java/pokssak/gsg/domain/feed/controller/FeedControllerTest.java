@@ -12,6 +12,8 @@ import pokssak.gsg.domain.feed.dto.FeedResponse;
 import pokssak.gsg.domain.feed.entity.FeedType;
 import pokssak.gsg.domain.feed.exception.FeedErrorCode;
 import pokssak.gsg.domain.feed.service.FeedService;
+import pokssak.gsg.domain.user.entity.JoinType;
+import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
 
 import java.time.LocalDateTime;
@@ -32,6 +34,7 @@ class FeedControllerTest {
 
     private FeedRequest feedRequest;
     private FeedResponse feedResponse;
+    private User testUser;
 
     @BeforeEach
     void setUp() {
@@ -48,6 +51,15 @@ class FeedControllerTest {
                 .type(FeedType.LIKE)
                 .isRead(false)
                 .createdAt(LocalDateTime.now())
+                .build();
+
+        testUser = User.builder()
+                .id(1L)
+                .email("test@example.com")
+                .nickName("tester")
+                .imageUrl("https://image.com/test.png")
+                .joinType(JoinType.LOCAL)
+                .userKeywords(List.of())
                 .build();
     }
 
@@ -75,7 +87,7 @@ class FeedControllerTest {
 
         when(feedService.getUserFeeds(eq(1L), any(Pageable.class))).thenReturn(page);
 
-        ResponseEntity<Page<FeedResponse>> response = feedController.getUserFeeds(1L, 0, 20);
+        ResponseEntity<Page<FeedResponse>> response = feedController.getUserFeeds(testUser, 0, 20);
 
         verify(feedService).getUserFeeds(eq(1L), any(Pageable.class));
         assertThat(response.getBody()).isEqualTo(page);
@@ -88,7 +100,7 @@ class FeedControllerTest {
                 .thenThrow(new CustomException(UserErrorCode.NOT_FOUND));
 
         assertThrows(CustomException.class, () -> {
-            feedController.getUserFeeds(1L, 0, 20);
+            feedController.getUserFeeds(testUser, 0, 20);
         });
     }
 
@@ -113,10 +125,28 @@ class FeedControllerTest {
     }
 
     @Test
+    void markAllAsRead_성공() {
+        ResponseEntity<Void> response = feedController.markAllAsRead(testUser);
+
+        verify(feedService).markAllAsRead(testUser.getId());
+        assertThat(response.getStatusCodeValue()).isEqualTo(200);
+    }
+
+    @Test
+    void markAllAsRead_유저없음_예외() {
+        doThrow(new CustomException(UserErrorCode.NOT_FOUND))
+                .when(feedService).markAllAsRead(testUser.getId());
+
+        assertThrows(CustomException.class, () -> {
+            feedController.markAllAsRead(testUser);
+        });
+    }
+
+    @Test
     void getUnreadCount_성공() {
         when(feedService.getUnreadCount(1L)).thenReturn(3L);
 
-        ResponseEntity<Long> response = feedController.getUnreadCount(1L);
+        ResponseEntity<Long> response = feedController.getUnreadCount(testUser);
 
         verify(feedService).getUnreadCount(1L);
         assertThat(response.getBody()).isEqualTo(3L);
@@ -129,7 +159,7 @@ class FeedControllerTest {
                 .thenThrow(new CustomException(UserErrorCode.NOT_FOUND));
 
         assertThrows(CustomException.class, () -> {
-            feedController.getUnreadCount(1L);
+            feedController.getUnreadCount(testUser);
         });
     }
 }

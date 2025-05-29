@@ -22,7 +22,7 @@ public class Review extends BaseEntity {
     private Long id;
 
     @Builder.Default
-    private int rate = 0;
+    private float rating = 0;
 
     private String content;
 

@@ -43,7 +43,7 @@ public class UserController {
     }
 
     // 회원복구
-    @PutMapping("/users/{userId}")
+    @PutMapping("/users/{userId}/restore")
     public ResponseEntity<Void> restoreUser(@PathVariable Long userId) {
         userService.restoreUser(userId);
         return ResponseEntity.noContent().build();
@@ -67,5 +67,13 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-
+    /** 프로필 이미지 */
+    @PatchMapping(value = "/users/profile/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateProfileImage(
+            @AuthenticationPrincipal User user,
+            @RequestPart(value = "image", required = true) MultipartFile image
+    ) {
+        userService.updateProfileImage(user.getId(), image);
+        return ResponseEntity.noContent().build();
+    }
 }

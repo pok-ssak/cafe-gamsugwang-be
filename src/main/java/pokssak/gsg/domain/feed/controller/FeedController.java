@@ -4,11 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.domain.feed.dto.FeedRequest;
 import pokssak.gsg.domain.feed.dto.FeedResponse;
 import pokssak.gsg.domain.feed.dto.PageRequestDto;
 import pokssak.gsg.domain.feed.service.FeedService;
+import pokssak.gsg.domain.user.entity.User;
 
 @RestController
 @RequestMapping("/api/v1/feeds")
@@ -25,15 +27,15 @@ public class FeedController {
     }
 
     // 특정 유저 피드 페이징 조회
-    @GetMapping("/user/{userId}")
+    @GetMapping
     public ResponseEntity<Page<FeedResponse>> getUserFeeds(
-            @PathVariable Long userId,
+            @AuthenticationPrincipal User user,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         PageRequestDto pageRequestDto = new PageRequestDto(page, size);
         Pageable pageable = pageRequestDto.toPageable();
-        Page<FeedResponse> feeds = feedService.getUserFeeds(userId, pageable);
+        Page<FeedResponse> feeds = feedService.getUserFeeds(user.getId(), pageable);
         return ResponseEntity.ok(feeds);
     }
 
@@ -45,10 +47,17 @@ public class FeedController {
         return ResponseEntity.ok().build();
     }
 
+    // 피드 일괄 읽음 처리
+    @PutMapping("/read-all")
+    public ResponseEntity<Void> markAllAsRead(@AuthenticationPrincipal User user) {
+        feedService.markAllAsRead(user.getId());
+        return ResponseEntity.ok().build();
+    }
+
     // 안 읽은 피드 카운트 조회
-    @GetMapping("/user/{userId}/unread-count")
-    public ResponseEntity<Long> getUnreadCount(@PathVariable Long userId) {
-        long count = feedService.getUnreadCount(userId);
+    @GetMapping("/unread-count")
+    public ResponseEntity<Long> getUnreadCount(@AuthenticationPrincipal User user) {
+        long count = feedService.getUnreadCount(user.getId());
         return ResponseEntity.ok(count);
     }
 }

@@ -109,7 +109,6 @@ class FeedServiceTest {
         verify(feedRepository).markAsReadById(3L);
     }
 
-
     @Test
     void markAsRead_피드없으면_예외() {
         when(feedRepository.findById(999L)).thenReturn(Optional.empty());
@@ -117,6 +116,26 @@ class FeedServiceTest {
         CustomException exception = assertThrows(CustomException.class, () -> feedService.markAsRead(999L));
 
         assertThat(exception.getErrorCode()).isEqualTo(FeedErrorCode.FEED_NOT_FOUND);
+    }
+
+    @Test
+    void markAllAsRead_성공() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        doNothing().when(feedRepository).markAllAsReadByUserId(1L);
+
+        feedService.markAllAsRead(1L);
+
+        verify(userRepository).findById(1L);
+        verify(feedRepository).markAllAsReadByUserId(1L);
+    }
+
+    @Test
+    void markAllAsRead_유저없으면_예외() {
+        when(userRepository.findById(999L)).thenReturn(Optional.empty());
+
+        CustomException exception = assertThrows(CustomException.class, () -> feedService.markAllAsRead(999L));
+
+        assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.NOT_FOUND);
     }
 
     @Test

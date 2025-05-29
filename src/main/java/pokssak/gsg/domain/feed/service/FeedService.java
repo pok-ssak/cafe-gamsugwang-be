@@ -2,16 +2,13 @@ package pokssak.gsg.domain.feed.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.feed.dto.FeedRequest;
 import pokssak.gsg.domain.feed.dto.FeedResponse;
 import pokssak.gsg.domain.feed.entity.Feed;
-import pokssak.gsg.domain.feed.entity.FeedType;
 import pokssak.gsg.domain.feed.exception.FeedErrorCode;
 import pokssak.gsg.domain.feed.repository.FeedRepository;
 import pokssak.gsg.domain.user.entity.User;
@@ -52,6 +49,14 @@ public class FeedService {
                 .orElseThrow(() -> new CustomException(FeedErrorCode.FEED_NOT_FOUND));
 
         feedRepository.markAsReadById(feedId);
+    }
+
+    @Transactional
+    public void markAllAsRead(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
+
+        feedRepository.markAllAsReadByUserId(userId);
     }
 
     public long getUnreadCount(Long userId) {

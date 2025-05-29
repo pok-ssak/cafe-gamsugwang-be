@@ -3,12 +3,17 @@ package pokssak.gsg.domain.user.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.common.jwt.JwtTokenDto;
 import pokssak.gsg.common.jwt.JwtTokenProvider;
 import pokssak.gsg.domain.user.dto.ConflictEmailCheckRequestDto;
 import pokssak.gsg.domain.user.dto.LoginRequestDto;
+import pokssak.gsg.domain.user.dto.OAuthCodeDto;
+import pokssak.gsg.domain.user.dto.OAuthSignUpRequestDto;
+import pokssak.gsg.domain.user.dto.OAuthTokenResponseDto;
 import pokssak.gsg.domain.user.dto.SignupRequestDto;
+import pokssak.gsg.domain.user.dto.UserInfoResponseDto;
 import pokssak.gsg.domain.user.entity.JoinType;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
@@ -22,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
     private final UserKeywordService userKeywordService;
+    private final OAuthPlatformService oAuthPlatformService;
 
     public void conflictEmailCheck(ConflictEmailCheckRequestDto conflictEmailCheckRequestDto) {
         if (userRepository.existsByEmail(conflictEmailCheckRequestDto.email())) {
@@ -46,7 +52,7 @@ public class AuthService {
 
         userKeywordService.addUserKeywords(user.getId(), signupRequestDto.keywords().stream().toList());
 
-        JwtTokenDto token = jwtTokenProvider.createToken(user.getEmail());
+        JwtTokenDto token = jwtTokenProvider.createToken(user.getId());
 
         // TODO : refresh token store in redis
         return token;
@@ -60,9 +66,31 @@ public class AuthService {
             throw new CustomException(UserErrorCode.INCORRECT_PASSWORD);
         }
 
-        JwtTokenDto token = jwtTokenProvider.createToken(user.getEmail());
+        JwtTokenDto token = jwtTokenProvider.createToken(user.getId());
 
         // TODO : refresh token store in redis
         return token;
+    }
+
+    @Transactional
+    public OAuthTokenResponseDto oAuthSignUp(OAuthCodeDto codeDto, JoinType oAuthPlatform) {
+        String accessToken = oAuthPlatformService.getAccessToken(codeDto, oAuthPlatform);
+        UserInfoResponseDto userInfo = oAuthPlatformService.getUserInfo(accessToken, oAuthPlatform);
+
+        User user = oAuthPlatformService.getOAuthUser(userInfo.id(), oAuthPlatform);
+
+        boolean isRegister = user.getNickName() != null; // false 일때 추가 정보 입력
+
+        return new OAuthTokenResponseDto(isRegister, jwtTokenProvider.createToken(user.getId()));
+    }
+
+    @Transactional
+    public void oAuthRegister(OAuthSignUpRequestDto oAuthSignUpRequestDto, User user) {
+        User find = userRepository.findById(user.getId())
+            .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
+
+        userKeywordService.addUserKeywords(user.getId(), oAuthSignUpRequestDto.keywords().stream().toList());
+
+        find.updateOAuthUser(oAuthSignUpRequestDto);
     }
 }

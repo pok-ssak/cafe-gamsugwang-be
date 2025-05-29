@@ -36,19 +36,19 @@ public class JwtTokenProvider {
     }
 
 
-    public JwtTokenDto createToken(String email) {
+    public JwtTokenDto createToken(Long userId) {
         long now = (new Date()).getTime();
         Date accessTokenExpireTime = new Date(now + tokenExpireSeconds);
         Date refreshTokenExpireTime = new Date(now + (tokenExpireSeconds * 2 * 30));
 
         String accessToken = Jwts.builder()
-            .setSubject(email)
+            .setSubject(String.valueOf(userId))
             .signWith(key, SignatureAlgorithm.HS512)
             .setExpiration(accessTokenExpireTime)
             .compact();
 
         String refreshToken = Jwts.builder()
-            .setSubject(email)
+            .setSubject(String.valueOf(userId))
             .signWith(key, SignatureAlgorithm.HS512)
             .setExpiration(refreshTokenExpireTime)
             .compact();
@@ -57,8 +57,8 @@ public class JwtTokenProvider {
     }
 
     public Authentication getAuthentication(String accessToken) {
-        String email = getClaims(accessToken).getSubject();
-        UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+        String userId = getClaims(accessToken).getSubject();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(userId);
         return new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
     }
 

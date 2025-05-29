@@ -1,20 +1,30 @@
 package pokssak.gsg.domain.user.entity;
 
-import java.util.*;
-
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.SQLRestriction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import jakarta.persistence.*;
-import lombok.*;
-import org.hibernate.annotations.SQLDelete;
 import pokssak.gsg.common.entity.BaseEntity;
 import pokssak.gsg.domain.bookmark.entity.Bookmark;
 import pokssak.gsg.domain.review.entity.Review;
 import pokssak.gsg.domain.review.entity.ReviewLike;
-
-import java.util.ArrayList;
-import java.util.List;
+import pokssak.gsg.domain.user.dto.OAuthSignUpRequestDto;
 
 @Table(name = "users")
 @Builder
@@ -25,7 +35,7 @@ import java.util.List;
 
 @SQLDelete(sql = "UPDATE users SET is_deleted = true WHERE id = ?")
 @SQLRestriction("is_deleted = false")
-public class User extends BaseEntity implements UserDetails{
+public class User extends BaseEntity implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,6 +44,7 @@ public class User extends BaseEntity implements UserDetails{
     private String email;
     private String password;
     private String imageUrl;
+    private String oauthPlatformId;
 
     @OneToMany
     private List<UserKeyword> userKeywords;
@@ -78,5 +89,9 @@ public class User extends BaseEntity implements UserDetails{
 
     public boolean hasLiked(Long reviewId) {
         return likedReviews.stream().anyMatch(reviewLike -> reviewLike.getReview().getId().equals(reviewId));
+    }
+
+    public void updateOAuthUser(OAuthSignUpRequestDto oAuthSignUpRequestDto) {
+        this.nickName = oAuthSignUpRequestDto.nickname();
     }
 }

@@ -11,6 +11,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import pokssak.gsg.common.exception.CustomException;
+import pokssak.gsg.domain.feed.service.FeedService;
 import pokssak.gsg.domain.review.entity.Review;
 import pokssak.gsg.domain.review.entity.ReviewLike;
 import pokssak.gsg.domain.review.exception.ReviewErrorCode;
@@ -45,6 +46,8 @@ class ReviewLikeServiceTest {
     RedisTemplate<String, Object> redisTemplate;
     @Mock
     ValueOperations<String, Object> valueOperations;
+    @Mock
+    FeedService feedService;
 
     @BeforeEach
     void setUp() {
@@ -62,7 +65,11 @@ class ReviewLikeServiceTest {
             Long userId = 1L;
             Long reviewId = 1L;
             User user = User.builder().id(userId).build();
-            Review review = Review.builder().id(reviewId).likeCount(0L).build();
+            Review review = Review.builder()
+                    .id(reviewId)
+                    .likeCount(0L)
+                    .user(User.builder().id(2L).build())
+                    .build();
 
             when(redisTemplate.opsForValue()).thenReturn(valueOperations);
             when(userRepository.findById(userId)).thenReturn(Optional.of(user));
@@ -76,6 +83,7 @@ class ReviewLikeServiceTest {
             // then
             verify(reviewLikeRepository).save(any(ReviewLike.class));
             verify(valueOperations).increment(eq("review:like:count:" + reviewId));
+            verify(feedService).createFeed(any());
             assertThat(review.getLikeCount()).isEqualTo(result);
         }
 

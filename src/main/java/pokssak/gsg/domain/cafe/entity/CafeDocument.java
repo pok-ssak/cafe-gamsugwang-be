@@ -42,8 +42,8 @@ public class CafeDocument {
     @Field(type = FieldType.Integer)
     private Integer reviewCount;
 
-    @Field(type = FieldType.Text)
-    private String info;
+//    @Field(type = FieldType.Text)
+//    private String info;
 
     @Field(type = FieldType.Double)
     private BigDecimal rate;
@@ -91,9 +91,6 @@ public class CafeDocument {
         @GeoPointField
         private GeoPoint location;
     }
-
-    @GeoPointField
-    private GeoPoint location;
 
     @Getter
     @Builder

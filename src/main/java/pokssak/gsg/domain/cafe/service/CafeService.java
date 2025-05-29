@@ -8,9 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
-import pokssak.gsg.domain.cafe.dto.RecommendResponse;
-import pokssak.gsg.domain.cafe.dto.GetCafeResponse;
-import pokssak.gsg.domain.cafe.dto.SuggestRequest;
+import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.entity.Cafe;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
@@ -41,12 +39,11 @@ public class CafeService {
      * @param limit
      * @return
      */
-    public List<String> autoComplete(String keyword, int limit) {
+    public List<AutoCompleteResponse> autoComplete(String keyword, int limit) {
         log.info("keyword: {}, limit: {}", keyword, limit);
-        List<String> titles = cafeSearchService.suggestTitleByKeyword(keyword, limit);
-        log.info("titleByPrefix = {}", titles);
+        List<AutoCompleteResponse> response = cafeSearchService.suggestTitleByKeyword(keyword, limit);
 
-        return titles;
+        return response;
     }
 
     /**
@@ -109,6 +106,16 @@ public class CafeService {
                 .build();
 
         suggestionRedisRepository.save(suggestion);
+    }
+
+    public List<SearchCafeResponse> searchCafes(String query, int limit) {
+        log.info("search query: {}", query);
+        List<SearchCafeResponse> cafes = cafeSearchService.searchByTitle(query, limit);
+        if (cafes.isEmpty()) {
+            throw new CustomException(CafeErrorCode.CAFE_NOT_FOUND);
+        }
+        log.info("search results: {}", cafes);
+        return cafes;
     }
 }
 

@@ -6,9 +6,7 @@ import org.hibernate.annotations.BatchSize;
 import pokssak.gsg.common.entity.BaseEntity;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Table(name = "cafes")

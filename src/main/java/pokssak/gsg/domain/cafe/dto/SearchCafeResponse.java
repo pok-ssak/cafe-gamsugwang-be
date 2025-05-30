@@ -24,7 +24,7 @@ public class SearchCafeResponse {
     private Double lat;
     private Double lon;
     private List<KeywordDTO> keywordList;
-    private Boolean isBookmarked = false;
+    private Boolean isBookmarked;
 
     public static SearchCafeResponse from(CafeDocument cafeDocument) {
         return SearchCafeResponse.builder()

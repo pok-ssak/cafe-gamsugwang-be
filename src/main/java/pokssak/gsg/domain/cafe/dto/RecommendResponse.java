@@ -22,7 +22,7 @@ public class RecommendResponse {
     private Double lat;
     private Double lon;
     private List<KeywordDTO> keywordList;
-    private Boolean isBookmarked = false;
+    private Boolean isBookmarked;
 
     public static RecommendResponse from(CafeDocument cafeDocument) {
         return RecommendResponse.builder()

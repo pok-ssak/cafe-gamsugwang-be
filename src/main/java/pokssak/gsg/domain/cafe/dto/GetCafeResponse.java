@@ -25,7 +25,7 @@ public class GetCafeResponse {
     private String phoneNumber;
     private List<MenuResponse> menuList;
     private List<KeywordResponse> keywordList;
-    private Boolean isBookmarked = false;
+    private Boolean isBookmarked;
 
 
     public static GetCafeResponse from(Cafe cafe) {
@@ -53,7 +53,7 @@ public class GetCafeResponse {
 
     public static GetCafeResponse from(Cafe cafe, Boolean isBookmarked) {
         return GetCafeResponse.builder()
-                .Id(cafe.getId())
+                .id(cafe.getId())
                 .title(cafe.getTitle())
                 .openTime(cafe.getOpenTime())
                 .rate(cafe.getRate())

@@ -24,6 +24,7 @@ public class SearchCafeResponse {
     private Double lat;
     private Double lon;
     private List<KeywordDTO> keywordList;
+    private Boolean isBookmarked;
 
     public static SearchCafeResponse from(CafeDocument cafeDocument) {
         return SearchCafeResponse.builder()
@@ -39,10 +40,27 @@ public class SearchCafeResponse {
                 .keywordList(cafeDocument.getKeywords().stream()
                         .map(keyword -> new KeywordDTO(keyword.getKey()))
                         .toList())
+                .isBookmarked(false)
                 .build();
     }
 
-
+    public static SearchCafeResponse from(CafeDocument cafeDocument, Boolean isBookmarked) {
+        return SearchCafeResponse.builder()
+                .id(cafeDocument.getId())
+                .title(cafeDocument.getTitle())
+                .rate(cafeDocument.getRate())
+                .reviewCount(cafeDocument.getReviewCount())
+                .imageUrl(cafeDocument.getImgUrl())
+                .address(cafeDocument.getAddress().getStreet())
+                .zipcode(cafeDocument.getAddress().getZipCode())
+                .lat(cafeDocument.getAddress().getLocation().getLat())
+                .lon(cafeDocument.getAddress().getLocation().getLon())
+                .keywordList(cafeDocument.getKeywords().stream()
+                        .map(keyword -> new KeywordDTO(keyword.getKey()))
+                        .toList())
+                .isBookmarked(isBookmarked)
+                .build();
+    }
 
 
     @Getter

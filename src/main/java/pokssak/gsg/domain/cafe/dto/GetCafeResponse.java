@@ -12,7 +12,7 @@ import java.util.List;
 @Setter
 @Builder
 public class GetCafeResponse {
-    private Long Id;
+    private Long id;
     private String title;
     private String openTime;
     private BigDecimal rate;
@@ -25,11 +25,12 @@ public class GetCafeResponse {
     private String phoneNumber;
     private List<MenuResponse> menuList;
     private List<KeywordResponse> keywordList;
+    private Boolean isBookmarked;
 
 
     public static GetCafeResponse from(Cafe cafe) {
         return GetCafeResponse.builder()
-                .Id(cafe.getId())
+                .id(cafe.getId())
                 .title(cafe.getTitle())
                 .openTime(cafe.getOpenTime())
                 .rate(cafe.getRate())
@@ -46,6 +47,30 @@ public class GetCafeResponse {
                 .keywordList(cafe.getKeywordList().stream()
                         .map(KeywordResponse::from)
                         .toList())
+                .isBookmarked(false)
+                .build();
+    }
+
+    public static GetCafeResponse from(Cafe cafe, Boolean isBookmarked) {
+        return GetCafeResponse.builder()
+                .id(cafe.getId())
+                .title(cafe.getTitle())
+                .openTime(cafe.getOpenTime())
+                .rate(cafe.getRate())
+                .reviewCount(cafe.getRateCount())
+                .imageUrl(cafe.getImageUrl())
+                .address(cafe.getAddress())
+                .zipcode(cafe.getZipcode())
+                .lat(cafe.getLat())
+                .lon(cafe.getLon())
+                .phoneNumber(cafe.getPhoneNumber())
+                .menuList(cafe.getMenuList().stream()
+                        .map(MenuResponse::from)
+                        .toList())
+                .keywordList(cafe.getKeywordList().stream()
+                        .map(KeywordResponse::from)
+                        .toList())
+                .isBookmarked(false)
                 .build();
     }
 }

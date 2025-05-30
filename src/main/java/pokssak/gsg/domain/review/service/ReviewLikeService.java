@@ -6,6 +6,9 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
+import pokssak.gsg.domain.feed.dto.FeedRequest;
+import pokssak.gsg.domain.feed.entity.FeedType;
+import pokssak.gsg.domain.feed.service.FeedService;
 import pokssak.gsg.domain.review.entity.ReviewLike;
 import pokssak.gsg.domain.review.exception.ReviewErrorCode;
 import pokssak.gsg.domain.review.repository.ReviewLikeRepository;
@@ -22,6 +25,7 @@ public class ReviewLikeService {
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final FeedService feedService;
 
     private static final String LIKE_COUNT_KEY_PREFIX = "review:like:count:";
 
@@ -52,8 +56,26 @@ public class ReviewLikeService {
             reviewLikeRepository.save(reviewLike);
             redisTemplate.opsForValue().increment(likeCountKey);
             review.updateLikeCount(review.getLikeCount() + 1);
+            handleLikeOnReview(reviewId);
             log.info("리뷰 좋아요 userId={} reviewId={}", user.getId(), reviewId);
             return review.getLikeCount();
         }
     }
+
+    public void handleLikeOnReview(Long reviewId) {
+        var review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new CustomException(ReviewErrorCode.NOT_FOUND));
+
+        Long reviewAuthorId = review.getUser().getId();
+
+        FeedRequest feedRequest = new FeedRequest(
+                reviewAuthorId,
+                "회원님이 남긴 리뷰에 좋아요가 눌렸습니다.",
+                "/api/v1/reviews/" + reviewId,
+                FeedType.LIKE
+        );
+
+        feedService.createFeed(feedRequest);
+    }
+
 }

@@ -1,6 +1,7 @@
 package pokssak.gsg.domain.feed.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -15,6 +16,7 @@ import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
 import pokssak.gsg.domain.user.repository.UserRepository;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FeedService {
@@ -22,6 +24,7 @@ public class FeedService {
     private final FeedRepository feedRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public void createFeed(FeedRequest feedRequest) {
         User user = userRepository.findById(feedRequest.userId())
                 .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
@@ -35,6 +38,7 @@ public class FeedService {
                 .build();
 
         feedRepository.save(feed);
+        log.info("피드생성 성공 - userId={}, feedId={}", user.getId(), feed.getId());
     }
 
     public Page<FeedResponse> getUserFeeds(Long userId, Pageable pageable) {
@@ -49,6 +53,7 @@ public class FeedService {
                 .orElseThrow(() -> new CustomException(FeedErrorCode.FEED_NOT_FOUND));
 
         feedRepository.markAsReadById(feedId);
+        log.info("읽음 처리 성공 - feedId={}", feedId);
     }
 
     @Transactional
@@ -57,6 +62,7 @@ public class FeedService {
                 .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
 
         feedRepository.markAllAsReadByUserId(userId);
+        log.info("일괄 읽음 처리 성공 - userId={}", userId);
     }
 
     public long getUnreadCount(Long userId) {

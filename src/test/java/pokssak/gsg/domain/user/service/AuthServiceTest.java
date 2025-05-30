@@ -60,7 +60,7 @@ class AuthServiceTest {
         String email = "example@google.com";
         when(userRepository.existsByEmail(email)).thenReturn(false);
         when(passwordEncoder.encode("password")).thenReturn("password");
-        when(jwtTokenProvider.createToken(email)).thenReturn(new JwtTokenDto("accessToken", "refreshToken"));
+        when(jwtTokenProvider.createToken(any())).thenReturn(new JwtTokenDto("accessToken", "refreshToken"));
 
         SignupRequestDto signupRequestDto = new SignupRequestDto(email, "password", "nickname", new HashSet<>());
         JwtTokenDto jwtTokenDto = authService.localSignup(signupRequestDto);
@@ -73,6 +73,7 @@ class AuthServiceTest {
     @Test
     void localLoginTest() {
         User user = User.builder()
+            .id(1L)
             .email("example@google.com")
             .password("password")
             .build();
@@ -83,7 +84,7 @@ class AuthServiceTest {
 
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
         when(passwordEncoder.matches(loginRequestDto.password(), user.getPassword())).thenReturn(true);
-        when(jwtTokenProvider.createToken(email)).thenReturn(new JwtTokenDto("accessToken", "refreshToken"));
+        when(jwtTokenProvider.createToken(user.getId())).thenReturn(new JwtTokenDto("accessToken", "refreshToken"));
 
         JwtTokenDto jwtTokenDto = authService.localLogin(loginRequestDto);
         assertThat(jwtTokenDto.accessToken()).isNotNull();

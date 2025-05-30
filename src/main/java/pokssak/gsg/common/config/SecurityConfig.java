@@ -1,5 +1,6 @@
 package pokssak.gsg.common.config;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,12 +19,22 @@ import pokssak.gsg.common.filter.JwtAuthenticationFilter;
 import pokssak.gsg.common.filter.JwtExceptionFilter;
 import pokssak.gsg.common.jwt.JwtTokenProvider;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+
+    private static final String[] WHITE_LIST = {
+        "/api/v1/auth/login",
+        "/api/v1/auth/signup",
+        "/api/v1/auth/oauth/kakao",
+        "/api/v1/auth/oauth/naver",
+        "api/v1/auth/oauth/google",
+        "/api/v1/cafes/**",
+        "/batch/**",
+        "/swagger-ui/**",
+        "/v3/api-docs/**"
+    };
 
     private final JwtTokenProvider jwtTokenProvider;
 
@@ -41,10 +52,7 @@ public class SecurityConfig {
             }))
 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/auth/**").permitAll()
-                .requestMatchers("/api/v1/cafes/**").permitAll()
-                .requestMatchers("/batch/**").permitAll()
-                .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers(WHITE_LIST).permitAll()
                 .anyRequest().authenticated()
             )
 

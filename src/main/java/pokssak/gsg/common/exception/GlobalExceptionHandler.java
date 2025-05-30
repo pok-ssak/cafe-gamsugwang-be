@@ -22,7 +22,7 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> customExceptionHandler(CustomException ex) {
         log.info("Custom Exception: {}", ex.getErrorCode().getMessage());
         ErrorCode errorCode = ex.getErrorCode();
-
+        log.error(String.valueOf(ex.getErrorCode()));
         return handleExceptionInternal(errorCode);
     }
 

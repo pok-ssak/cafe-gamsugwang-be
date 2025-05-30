@@ -13,8 +13,11 @@ import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.service.CafeService;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
+import pokssak.gsg.domain.user.entity.UserKeyword;
+import pokssak.gsg.domain.user.service.UserKeywordService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class CafeController {
     private final CafeService cafeService;
     private final ReviewService reviewService;
     private final EmbeddingModel embeddingModel;
+    private final UserKeywordService userKeywordService;
 
 
     /**
@@ -32,8 +36,12 @@ public class CafeController {
      * @return
      */
     @GetMapping("/{cafeId}")
-    public ResponseEntity<?> getCafe(@PathVariable Long cafeId) {
-        GetCafeResponse cafe = cafeService.getCafe(cafeId);
+    public ResponseEntity<?> getCafe(
+            @AuthenticationPrincipal User user, // 리뷰별 좋아요 확인을 위함.
+            @PathVariable Long cafeId) {
+
+        Long userId = user != null ? user.getId() : null;
+        GetCafeResponse cafe = cafeService.getCafe(userId, cafeId);
         return ResponseEntity.ok(ApiResponse.ok(cafe));
     }
 
@@ -65,6 +73,7 @@ public class CafeController {
 
     @GetMapping("/recommend")
     public ResponseEntity<?> recommend(
+            @AuthenticationPrincipal User user,
             @RequestParam String option,
             @RequestParam String keyword,
             @RequestParam(required = false) Double lat,
@@ -74,20 +83,41 @@ public class CafeController {
         log.info("keyword: {}, lat: {}, lon: {}, limit: {}", keyword, lat, lon, limit);
         List<RecommendResponse> results;
 
+        Long userId = user != null ? user.getId() : null;
+
         switch (option) {
             case "location":
-                results = cafeService.recommendByLocation(lat, lon, limit);
+                results = cafeService.recommendByLocation(userId, lat, lon, limit);
                 break;
             case "keyword":
-                results = cafeService.recommendByKeyword(keyword, limit);
+                results = cafeService.recommendByKeyword(userId, keyword, limit);
                 break;
             case "hybrid":
-                results = cafeService.recommendByKeyword(keyword, limit); // 가중치 기능구현
+                results = cafeService.recommendByKeyword(userId, keyword, limit); // 가중치 기능구현
                 break;
             default:
                 return ResponseEntity.badRequest().body("invalid option");
         }
         return ResponseEntity.ok(ApiResponse.ok(results));
+    }
+
+    @GetMapping("/self-recommend")
+    public ResponseEntity<?> customRecommend(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) Double lat,
+            @RequestParam(required = false) Double lon,
+            @RequestParam(defaultValue = "10") int limit) {
+
+        log.info("lat: {}, lon: {}, limit: {}",lat, lon, limit);
+        log.info("User: {}", user);
+        // 임베딩을 위해 String 으로 변환
+//        String keywords = user.getUserKeywords().stream()
+//                .map(u -> u.getKeyword().word())
+//                .collect(Collectors.joining(" "));
+//        log.info("user keywords: {}", userKeywordService);
+
+        List<RecommendResponse> recommendResponses = cafeService.recommendByUserInfo(user, lat, lon, limit);
+        return ResponseEntity.ok(ApiResponse.ok(recommendResponses));
     }
 
     @GetMapping("/{cafeId}/reviews")
@@ -114,6 +144,4 @@ public class CafeController {
         float[] embed = embeddingModel.embed(keyword);
         return ResponseEntity.ok(ApiResponse.ok(embed));
     }
-
-
 }

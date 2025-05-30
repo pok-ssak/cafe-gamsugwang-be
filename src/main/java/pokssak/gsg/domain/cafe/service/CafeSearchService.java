@@ -1,7 +1,7 @@
 package pokssak.gsg.domain.cafe.service;
 
 import co.elastic.clients.elasticsearch._types.LatLonGeoLocation;
-import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
+import co.elastic.clients.elasticsearch._types.query_dsl.*;
 import co.elastic.clients.elasticsearch.core.search.FieldCollapse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,12 +14,15 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
 import pokssak.gsg.domain.cafe.dto.AutoCompleteResponse;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
 import pokssak.gsg.domain.cafe.dto.SearchCafeResponse;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
+import pokssak.gsg.domain.user.entity.UserKeyword;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -123,6 +126,59 @@ public class CafeSearchService {
 
     }
 
+    public List<RecommendResponse> recommendByHybrid(String keyword, Double lat, Double lon, int limit) {
+        List<Float> embedding = getEmbedding(keyword);
+
+        NativeQuery query = NativeQuery.builder()
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address","imgUrl","reviewCount"}, null))
+                .withKnnSearches(k -> k
+                        .field("keywordVector")
+                        .queryVector(embedding)
+                        .k(limit)
+                        .numCandidates(1000))
+                .withQuery(q -> q
+                        .functionScore(fs -> fs
+                                .scoreMode(FunctionScoreMode.Sum)
+                                .boostMode(FunctionBoostMode.Replace)
+                        )
+                )
+                .withQuery(Query.of(q -> q.functionScore(fs -> fs
+                        .scoreMode(FunctionScoreMode.Sum)
+                        .boostMode(FunctionBoostMode.Replace)
+                        .functions(List.of(
+                                FunctionScore.of(fn -> fn
+                                        .fieldValueFactor(fvf -> fvf
+                                                .field("_score")
+                                                .factor(0.8)
+                                                .missing(0.0)))
+                                ,
+                                FunctionScore.of(fn -> fn
+                                        .filter(f -> f.nested(n -> n
+                                                .path("address")
+                                                .query(nq -> nq.geoDistance(g -> g
+                                                        .field("address.location")
+                                                        .distance("5km")
+                                                        .location(loc -> loc
+                                                                .latlon(LatLonGeoLocation.of(l -> l
+                                                                        .lat(lat)
+                                                                        .lon(lon)
+                                                                ))
+                                                        )))))
+                                        .weight(0.2)
+                                ))
+                        ))))
+                .withPageable(PageRequest.of(0, limit))
+                .build();
+
+        SearchHits<CafeDocument> hits = operations.search(query, CafeDocument.class);
+        log.info("hits: {}", hits);
+        return hits.stream()
+                .map(SearchHit::getContent)
+                .map(RecommendResponse::from)
+                .toList();
+
+    }
+
     public List<RecommendResponse> recommendByLocation(Double lat, Double lon, int radius, int size) {
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(q -> q.bool(b -> b
@@ -167,4 +223,6 @@ public class CafeSearchService {
                 .map(SearchCafeResponse::from)
                 .toList();
     }
+
+
 }

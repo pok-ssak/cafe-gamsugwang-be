@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @Builder
 public record FeedResponse (
+        Long feedId,
         String content,
         String url,
         FeedType type,
@@ -16,6 +17,7 @@ public record FeedResponse (
 ){
     public static FeedResponse from(Feed feed) {
         return FeedResponse.builder()
+                .feedId(feed.getId())
                 .content(feed.getContent())
                 .url(feed.getUrl())
                 .type(feed.getType())

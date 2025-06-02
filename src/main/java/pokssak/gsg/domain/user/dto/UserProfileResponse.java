@@ -1,6 +1,7 @@
 package pokssak.gsg.domain.user.dto;
 
 import lombok.Builder;
+import pokssak.gsg.common.vo.Keyword;
 import pokssak.gsg.domain.user.entity.JoinType;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.entity.UserKeyword;
@@ -15,7 +16,7 @@ public record UserProfileResponse(
         String imageUrl,
         JoinType joinType,
 
-        List<Long> keywordIds,
+        List<Keyword> keywords,
         int bookmarkCount,
         int reviewCount
 ) {
@@ -26,9 +27,7 @@ public record UserProfileResponse(
                 .email(user.getEmail())
                 .imageUrl(user.getImageUrl())
                 .joinType(user.getJoinType())
-                .keywordIds(user.getUserKeywords().stream()
-                        .map(UserKeyword::getId)
-                        .toList())
+                .keywords(user.getUserKeywords().stream().map(UserKeyword::getKeyword).toList())
                 .bookmarkCount(user.getBookmarks() != null ? user.getBookmarks().size() : 0)
                 .reviewCount(user.getReviews() != null ? user.getReviews().size() : 0)
                 .build();

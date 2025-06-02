@@ -1,5 +1,7 @@
 package pokssak.gsg.domain.user.service;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -51,21 +53,32 @@ public class UserKeywordService {
 
     // 키워드 수정
     @Transactional
-    public void updateUserKeywords(Long userId, List<Keyword> keywords) {
+    public void updateUserKeywords(Long userId, List<String> keywords) {
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(UserErrorCode.NOT_FOUND));
 
-        // 기존 키워드 모두 삭제
-        userKeywordRepository.deleteByUser(user);
+        var newWords = new HashSet<>(keywords);
+        var current = user.getUserKeywords();
 
-        // 새 키워드 추가
-        List<UserKeyword> newUserKeywords = keywords.stream()
-            .map(keyword -> UserKeyword.builder()
-                .user(user)
-                .keyword(keyword)
-                .build())
-            .collect(Collectors.toList());
+        // 삭제
+        var toRemove = current.stream()
+                .filter(uk -> !newWords.contains(uk.getKeyword().word()))
+                .toList();
+        userKeywordRepository.deleteAll(toRemove);
 
-        userKeywordRepository.saveAll(newUserKeywords);
+        // 현재 키워드 단어들만 추출
+        var existingWords = current.stream()
+                .map(uk -> uk.getKeyword().word())
+                .collect(Collectors.toSet());
+
+        // 추가
+        List<UserKeyword> toAdd = newWords.stream()
+                .filter(word -> !existingWords.contains(word))
+                .map(word -> UserKeyword.builder()
+                        .user(user)
+                        .keyword(new Keyword(word, 0L))
+                        .build())
+                .toList();
+        userKeywordRepository.saveAll(toAdd);
     }
 }

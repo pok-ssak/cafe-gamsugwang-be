@@ -32,7 +32,7 @@ class CustomUserDetailsServiceTest {
             .email(email)
             .build();
 
-        Mockito.when(userRepository.findById(id)).thenReturn(Optional.of(user));
+        Mockito.when(userRepository.findByIdWithKeywords(id)).thenReturn(Optional.of(user));
 
         User find = customUserDetailsService.loadUserByUsername(id.toString());
 

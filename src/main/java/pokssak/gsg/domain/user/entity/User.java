@@ -46,7 +46,7 @@ public class User extends BaseEntity implements UserDetails {
     private String imageUrl;
     private String oauthPlatformId;
 
-    @OneToMany
+    @OneToMany(mappedBy = "user")
     private List<UserKeyword> userKeywords;
     @OneToMany
     private List<Bookmark> bookmarks;

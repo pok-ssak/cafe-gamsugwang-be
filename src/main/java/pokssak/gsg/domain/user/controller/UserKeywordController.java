@@ -25,13 +25,13 @@ public class UserKeywordController {
         return ResponseEntity.ok(responses);
     }
 
-    // 사용자 키워드 수정
-    @PutMapping
-    public ResponseEntity<Void> updateUserKeywords(
-            @AuthenticationPrincipal User user,
-            @RequestBody KeywordRequest request
-    ) {
-        userKeywordService.updateUserKeywords(user.getId(), request.keywords());
-        return ResponseEntity.noContent().build();
-    }
+//    // 사용자 키워드 수정
+//    @PutMapping
+//    public ResponseEntity<Void> updateUserKeywords(
+//            @AuthenticationPrincipal User user,
+//            @RequestBody KeywordRequest request
+//    ) {
+//        userKeywordService.updateUserKeywords(user.getId(), request.keywords());
+//        return ResponseEntity.noContent().build();
+//    }
 }

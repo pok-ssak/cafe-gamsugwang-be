@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import pokssak.gsg.domain.feed.controller.api.FeedControllerApi;
 import pokssak.gsg.domain.feed.dto.FeedRequest;
 import pokssak.gsg.domain.feed.dto.FeedResponse;
 import pokssak.gsg.domain.feed.dto.PageRequestDto;
@@ -15,7 +16,7 @@ import pokssak.gsg.domain.user.entity.User;
 @RestController
 @RequestMapping("/api/v1/feeds")
 @RequiredArgsConstructor
-public class FeedController {
+public class FeedController implements FeedControllerApi {
 
     private final FeedService feedService;
 

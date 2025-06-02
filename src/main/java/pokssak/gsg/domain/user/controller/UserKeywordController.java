@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import pokssak.gsg.domain.user.controller.api.UserKeywordControllerApi;
 import pokssak.gsg.domain.user.dto.KeywordRequest;
 import pokssak.gsg.domain.user.dto.UserKeywordResponse;
 import pokssak.gsg.domain.user.entity.User;
@@ -14,7 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users/{userId}/keywords")
-public class UserKeywordController {
+public class UserKeywordController implements UserKeywordControllerApi {
 
     private final UserKeywordService userKeywordService;
 

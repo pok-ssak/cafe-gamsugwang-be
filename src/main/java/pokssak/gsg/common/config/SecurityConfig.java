@@ -27,6 +27,7 @@ public class SecurityConfig {
     private static final String[] WHITE_LIST = {
         "/api/v1/auth/login",
         "/api/v1/auth/signup",
+        "/api/v1/auth/email-validate",
         "/api/v1/auth/oauth/kakao",
         "/api/v1/auth/oauth/naver",
         "api/v1/auth/oauth/google",

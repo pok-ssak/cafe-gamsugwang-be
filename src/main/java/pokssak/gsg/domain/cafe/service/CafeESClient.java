@@ -14,14 +14,12 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
 import org.springframework.stereotype.Service;
 import pokssak.gsg.domain.cafe.dto.AutoCompleteResponse;
 import pokssak.gsg.domain.cafe.dto.RecommendResponse;
 import pokssak.gsg.domain.cafe.dto.SearchCafeResponse;
 import pokssak.gsg.domain.cafe.entity.CafeDocument;
-import pokssak.gsg.domain.user.entity.UserKeyword;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +27,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CafeSearchService {
+public class CafeESClient {
     private final ElasticsearchOperations operations;
     private final EmbeddingModel embeddingModel;
 

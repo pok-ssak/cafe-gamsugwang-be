@@ -20,10 +20,6 @@ import pokssak.gsg.domain.cafe.repository.CafeRepository;
 import pokssak.gsg.domain.cafe.repository.SuggestionRedisRepository;
 import pokssak.gsg.domain.user.dto.UserKeywordResponse;
 import pokssak.gsg.domain.user.entity.User;
-import pokssak.gsg.domain.user.entity.UserKeyword;
-import pokssak.gsg.domain.user.exception.UserErrorCode;
-import pokssak.gsg.domain.user.repository.UserKeywordRepository;
-import pokssak.gsg.domain.user.repository.UserRepository;
 import pokssak.gsg.domain.user.service.UserKeywordService;
 
 import java.util.List;
@@ -34,7 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Transactional(readOnly = true)
 public class CafeService {
-    private final CafeSearchService cafeSearchService;
+    private final CafeESClient cafeESClient;
     private final CafeESRepository cafeESRepository;
     private final CafeRepository cafeRepository;
     private final SuggestionRedisRepository suggestionRedisRepository;
@@ -53,7 +49,7 @@ public class CafeService {
      */
     public List<AutoCompleteResponse> autoComplete(String keyword, int limit) {
         log.info("keyword: {}, limit: {}", keyword, limit);
-        List<AutoCompleteResponse> response = cafeSearchService.suggestTitleByKeyword(keyword, limit);
+        List<AutoCompleteResponse> response = cafeESClient.suggestTitleByKeyword(keyword, limit);
 
         return response;
     }
@@ -67,7 +63,7 @@ public class CafeService {
     public List<RecommendResponse> recommendByKeyword(Long userId, String keyword, int limit) {
         log.info("keyword: {}, limit: {}", keyword, limit);
 
-        List<RecommendResponse> cafeDocuments = cafeSearchService.recommendByKeyword(keyword, limit);
+        List<RecommendResponse> cafeDocuments = cafeESClient.recommendByKeyword(keyword, limit);
         List<RecommendResponse> recommendResponses = updateBookmarkStatus(userId, cafeDocuments);
 
         log.info("cafeDocuments = {}", recommendResponses);
@@ -95,7 +91,7 @@ public class CafeService {
     public List<RecommendResponse> recommendByLocation(Long userId, Double lat, Double lon, int limit) {
         log.info("lat: {}, lon: {}, limit: {}", lat, lon, limit);
 
-        List<RecommendResponse> cafeDocuments = cafeSearchService.recommendByLocation(lat, lon, 20, limit);
+        List<RecommendResponse> cafeDocuments = cafeESClient.recommendByLocation(lat, lon, 20, limit);
         List<RecommendResponse> recommendResponses = updateBookmarkStatus(userId, cafeDocuments);
 
         log.info("recommendResponse = {}", recommendResponses);
@@ -143,7 +139,7 @@ public class CafeService {
 
     public List<SearchCafeResponse> searchCafes(String query, int limit) {
         log.info("search query: {}", query);
-        List<SearchCafeResponse> cafes = cafeSearchService.searchByTitle(query, limit);
+        List<SearchCafeResponse> cafes = cafeESClient.searchByTitle(query, limit);
         if (cafes.isEmpty()) {
             throw new CustomException(CafeErrorCode.CAFE_NOT_FOUND);
         }
@@ -162,7 +158,7 @@ public class CafeService {
                         .collect(Collectors.joining(" "));
             }
             log.info("user keywords: {}", keywords);
-            List<RecommendResponse> recommendResponses = cafeSearchService.recommendByHybrid(keywords, lat, lon, limit);
+            List<RecommendResponse> recommendResponses = cafeESClient.recommendByHybrid(keywords, lat, lon, limit);
             List<BookmarkResponse> userBookmarks = bookmarkService.getUserBookmarks(user.getId());
             // 북마크 여부 추가
             return recommendResponses.stream()
@@ -172,9 +168,8 @@ public class CafeService {
 
         }else{
             log.info("User is not authenticated, using default keywords.");
-            return cafeSearchService.recommendByHybrid(keywords, lat, lon, limit);
+            return cafeESClient.recommendByHybrid(keywords, lat, lon, limit);
         }
-
     }
 }
 

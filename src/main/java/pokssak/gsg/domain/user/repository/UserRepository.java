@@ -20,4 +20,9 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByIdIncludeDeleted(@Param("userId") Long userId);
 
     Optional<User> findByOauthPlatformIdAndJoinType(String platformId, JoinType joinType);
+
+    @Query("select u from User u left join fetch u.userKeywords where u.id = :userid")
+    Optional<User> findByIdWithKeywords(Long userid);
+
+
 }

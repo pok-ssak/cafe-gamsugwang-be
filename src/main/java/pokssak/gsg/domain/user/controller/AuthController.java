@@ -11,9 +11,11 @@ import org.springframework.web.bind.annotation.RestController;
 import pokssak.gsg.common.dto.ApiResponse;
 import pokssak.gsg.domain.user.dto.ConflictEmailCheckRequestDto;
 import pokssak.gsg.domain.user.dto.LoginRequestDto;
+import pokssak.gsg.domain.user.dto.LogoutRequestDto;
 import pokssak.gsg.domain.user.dto.OAuthCodeDto;
 import pokssak.gsg.domain.user.dto.OAuthSignUpRequestDto;
 import pokssak.gsg.domain.user.dto.SignupRequestDto;
+import pokssak.gsg.domain.user.dto.TokenReissueRequestDto;
 import pokssak.gsg.domain.user.entity.JoinType;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.AuthService;
@@ -65,8 +67,14 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("reissue")
+    public ResponseEntity<?> reissueToken(@RequestBody TokenReissueRequestDto reissueRequestDto) {
+        return ResponseEntity.ok(ApiResponse.ok(authService.reissue(reissueRequestDto)));
+    }
+
     @PostMapping("logout")
-    public ResponseEntity<?> localLogout(@RequestBody LoginRequestDto loginRequestDto) {
+    public ResponseEntity<?> logout(@RequestBody LogoutRequestDto logoutRequestDto) {
+        authService.logout(logoutRequestDto);
         return ResponseEntity.ok(ApiResponse.ok(null));
     }
 }

@@ -23,6 +23,7 @@ import pokssak.gsg.domain.user.dto.LoginRequestDto;
 import pokssak.gsg.domain.user.dto.SignupRequestDto;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
+import pokssak.gsg.domain.user.repository.RefreshTokenRepository;
 import pokssak.gsg.domain.user.repository.UserRepository;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +44,9 @@ class AuthServiceTest {
 
     @Mock
     UserKeywordService userKeywordService;
+
+    @Mock
+    RefreshTokenRepository refreshTokenRepository;
 
 
     @Test

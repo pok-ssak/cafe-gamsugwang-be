@@ -7,7 +7,8 @@ import pokssak.gsg.common.exception.ErrorCode;
 @AllArgsConstructor
 public enum AuthErrorCode implements ErrorCode {
 
-    UNSUPPORTED_SOCIAL_LOGIN(HttpStatus.BAD_REQUEST, "지원 하지 않는 소셜 로그인 입니다.");
+    UNSUPPORTED_SOCIAL_LOGIN(HttpStatus.BAD_REQUEST, "지원 하지 않는 소셜 로그인 입니다."),
+    INVALID_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, "올바르지 않은 refresh token 입니다");
 
 
     private final HttpStatus httpStatus;

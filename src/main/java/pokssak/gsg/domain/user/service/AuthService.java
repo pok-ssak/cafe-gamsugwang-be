@@ -9,14 +9,19 @@ import pokssak.gsg.common.jwt.JwtTokenDto;
 import pokssak.gsg.common.jwt.JwtTokenProvider;
 import pokssak.gsg.domain.user.dto.ConflictEmailCheckRequestDto;
 import pokssak.gsg.domain.user.dto.LoginRequestDto;
+import pokssak.gsg.domain.user.dto.LogoutRequestDto;
 import pokssak.gsg.domain.user.dto.OAuthCodeDto;
 import pokssak.gsg.domain.user.dto.OAuthSignUpRequestDto;
 import pokssak.gsg.domain.user.dto.OAuthTokenResponseDto;
 import pokssak.gsg.domain.user.dto.SignupRequestDto;
+import pokssak.gsg.domain.user.dto.TokenReissueRequestDto;
 import pokssak.gsg.domain.user.dto.UserInfoResponseDto;
 import pokssak.gsg.domain.user.entity.JoinType;
+import pokssak.gsg.domain.user.entity.RefreshToken;
 import pokssak.gsg.domain.user.entity.User;
+import pokssak.gsg.domain.user.exception.AuthErrorCode;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
+import pokssak.gsg.domain.user.repository.RefreshTokenRepository;
 import pokssak.gsg.domain.user.repository.UserRepository;
 
 @Service
@@ -28,6 +33,7 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserKeywordService userKeywordService;
     private final OAuthPlatformService oAuthPlatformService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public void conflictEmailCheck(ConflictEmailCheckRequestDto conflictEmailCheckRequestDto) {
         if (userRepository.existsByEmail(conflictEmailCheckRequestDto.email())) {
@@ -54,7 +60,10 @@ public class AuthService {
 
         JwtTokenDto token = jwtTokenProvider.createToken(user.getId());
 
-        // TODO : refresh token store in redis
+        RefreshToken refreshToken = new RefreshToken(token.refreshToken(), user.getId());
+
+        refreshTokenRepository.save(refreshToken);
+
         return token;
     }
 
@@ -68,7 +77,24 @@ public class AuthService {
 
         JwtTokenDto token = jwtTokenProvider.createToken(user.getId());
 
-        // TODO : refresh token store in redis
+        RefreshToken refreshToken = new RefreshToken(token.refreshToken(), user.getId());
+
+        refreshTokenRepository.save(refreshToken);
+
+        return token;
+    }
+
+    @Transactional
+    public JwtTokenDto reissue(TokenReissueRequestDto reissueRequestDto) {
+        RefreshToken refreshToken = refreshTokenRepository.findById(reissueRequestDto.refreshToken())
+            .orElseThrow(() -> new CustomException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+
+        Long userId = refreshToken.getUserId();
+
+        JwtTokenDto token = jwtTokenProvider.createToken(userId);
+
+        refreshToken.updateRefreshToken(token.refreshToken());
+
         return token;
     }
 
@@ -81,7 +107,13 @@ public class AuthService {
 
         boolean isRegister = user.getNickName() != null; // false 일때 추가 정보 입력
 
-        return new OAuthTokenResponseDto(isRegister, jwtTokenProvider.createToken(user.getId()));
+        JwtTokenDto token = jwtTokenProvider.createToken(user.getId());
+
+        RefreshToken refreshToken = new RefreshToken(token.refreshToken(), user.getId());
+
+        refreshTokenRepository.save(refreshToken);
+
+        return new OAuthTokenResponseDto(isRegister, token);
     }
 
     @Transactional
@@ -92,5 +124,13 @@ public class AuthService {
         userKeywordService.addUserKeywords(user.getId(), oAuthSignUpRequestDto.keywords().stream().toList());
 
         find.updateOAuthUser(oAuthSignUpRequestDto);
+    }
+
+    @Transactional
+    public void logout(LogoutRequestDto logoutRequestDto) {
+        RefreshToken refreshToken = refreshTokenRepository.findById(logoutRequestDto.refreshToken())
+            .orElseThrow(() -> new CustomException(AuthErrorCode.INVALID_REFRESH_TOKEN));
+
+        refreshTokenRepository.delete(refreshToken);
     }
 }

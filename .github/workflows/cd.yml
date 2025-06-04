@@ -25,6 +25,9 @@ jobs:
           echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml
         shell: bash
 
+      - name: Build with Gradle
+        run: ./gradlew clean bootJar
+
       - name: docker build and push
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}

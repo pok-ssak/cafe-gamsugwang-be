@@ -65,4 +65,23 @@ public class Cafe extends BaseEntity {
         keywordList.add(keyword);
         keyword.updateCafe(this);
     }
+
+    public void updateFromSuggestion(Suggestion.NewCafeData data) {
+        this.title = data.getTitle();
+        this.info = data.getInfo();
+        this.openTime = data.getOpenTime();
+        this.imageUrl = data.getImageUrl();
+        this.address = data.getAddress();
+        this.zipcode = data.getZipcode();
+        this.phoneNumber = data.getPhoneNumber();
+
+        // 메뉴와 키워드는 완전히 교체
+        this.menuList.clear();
+        this.menuList.addAll(data.getMenuList());
+
+        this.keywordList.clear();
+        this.keywordList.addAll(data.getKeywordList());
+    }
+
+
 }

@@ -13,11 +13,8 @@ import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.service.CafeService;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
-import pokssak.gsg.domain.user.entity.UserKeyword;
-import pokssak.gsg.domain.user.service.UserKeywordService;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -27,7 +24,6 @@ public class CafeController {
     private final CafeService cafeService;
     private final ReviewService reviewService;
     private final EmbeddingModel embeddingModel;
-    private final UserKeywordService userKeywordService;
 
 
     /**
@@ -40,10 +36,13 @@ public class CafeController {
             @AuthenticationPrincipal User user, // 리뷰별 좋아요 확인을 위함.
             @PathVariable Long cafeId) {
 
-        Long userId = user != null ? user.getId() : null;
+        Long userId = getUserId(user);
         GetCafeResponse cafe = cafeService.getCafe(userId, cafeId);
         return ResponseEntity.ok(ApiResponse.ok(cafe));
     }
+
+
+
 
     // 카페 수정제안
     @PutMapping("/{cafeId}/suggest")
@@ -83,7 +82,7 @@ public class CafeController {
         log.info("keyword: {}, lat: {}, lon: {}, limit: {}", keyword, lat, lon, limit);
         List<RecommendResponse> results;
 
-        Long userId = user != null ? user.getId() : null;
+        Long userId = getUserId(user);
 
         switch (option) {
             case "location":
@@ -138,10 +137,14 @@ public class CafeController {
         return ResponseEntity.ok(ApiResponse.ok(result));
     }
 
-    @GetMapping("/embedding")
-    public ResponseEntity<?> getEmbeddingVector(@RequestParam String keyword) {
-        log.info("keyword: {}", keyword);
-        float[] embed = embeddingModel.embed(keyword);
-        return ResponseEntity.ok(ApiResponse.ok(embed));
+//    @GetMapping("/embedding")
+//    public ResponseEntity<?> getEmbeddingVector(@RequestParam String keyword) {
+//        log.info("keyword: {}", keyword);
+//        float[] embed = embeddingModel.embed(keyword);
+//        return ResponseEntity.ok(ApiResponse.ok(embed));
+//    }
+//
+    private Long getUserId(User user) {
+        return user != null ? user.getId() : null;
     }
 }

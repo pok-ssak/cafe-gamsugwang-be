@@ -10,6 +10,7 @@ import pokssak.gsg.common.s3.S3Uploader;
 import pokssak.gsg.domain.user.dto.UserProfileResponse;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
 import pokssak.gsg.domain.user.dto.UserResponse;
+import pokssak.gsg.domain.user.dto.UserUpdateRequest;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.UserService;
 
@@ -21,19 +22,6 @@ public class UserController {
 
     private final UserService userService;
     private final S3Uploader s3Uploader;
-
-//    // 회원가입
-//    @PostMapping(value = "/register", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<UserResponse> register(
-//            @RequestPart("request") UserRegisterRequest request,
-//            @RequestPart(value = "image", required = false) MultipartFile image
-//    ) {
-//        String imageUrl = (image != null && !image.isEmpty()) ? s3Uploader.upload(image) : "";
-//
-//        UserResponse response = userService.register(request, imageUrl);
-//        return ResponseEntity.ok(response);
-//    }
-
 
     // 회원탈퇴 (soft delete)
     @DeleteMapping("/users")
@@ -57,13 +45,12 @@ public class UserController {
     }
 
     // 프로필 수정
-    @PutMapping(value = "/users/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PutMapping("/users/profile")
     public ResponseEntity<Void> updateProfile(
             @AuthenticationPrincipal User user,
-            @RequestPart("nickName") String nickName,
-            @RequestPart(value = "image", required = false) MultipartFile image) {
-
-        userService.updateProfile(user.getId(), nickName, image);
+            @RequestBody UserUpdateRequest userUpdateRequest
+    ) {
+        userService.updateProfile(user.getId(), userUpdateRequest);
         return ResponseEntity.noContent().build();
     }
 
@@ -76,4 +63,23 @@ public class UserController {
         userService.updateProfileImage(user.getId(), image);
         return ResponseEntity.noContent().build();
     }
+
+    /** 유저 리뷰 조회 */
+    @GetMapping("/users/my/reviews")
+    public ResponseEntity<?> getMyReviews(
+            @AuthenticationPrincipal User user
+    ) {
+        var result = userService.getMyReviews(user.getId());
+        return ResponseEntity.ok(result);
+    }
+
+    /** 유저 북마크 조회 */
+    @GetMapping("/users/my/bookmarks")
+    public ResponseEntity<?> getMyBookmarks(
+            @AuthenticationPrincipal User user
+    ) {
+        var result = userService.getMyBookmarks(user.getId());
+        return ResponseEntity.ok(result);
+    }
+
 }

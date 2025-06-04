@@ -9,6 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.common.vo.Keyword;
 import pokssak.gsg.domain.user.dto.UserKeywordResponse;
+import pokssak.gsg.domain.user.dto.UserUpdateRequest;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.entity.UserKeyword;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
@@ -37,7 +38,10 @@ class UserKeywordServiceTest {
 
     @BeforeEach
     void setUp() {
-        mockUser = User.builder().id(1L).nickName("테스트").build();
+        mockUser = User.builder()
+                .id(1L)
+                .nickName("테스트")
+                .build();
     }
 
     @Test
@@ -48,12 +52,12 @@ class UserKeywordServiceTest {
                 UserKeyword.builder()
                         .id(1L)
                         .user(mockUser)
-                        .keyword(new Keyword("조용한", 0))
+                        .keyword(new Keyword("조용한", 0L))
                         .build(),
                 UserKeyword.builder()
                         .id(2L)
                         .user(mockUser)
-                        .keyword(new Keyword("24시간", 0))
+                        .keyword(new Keyword("24시간", 0L))
                         .build()
         );
 
@@ -73,8 +77,8 @@ class UserKeywordServiceTest {
     void addUserKeywords_success() {
         // given
         List<Keyword> newKeywords = List.of(
-                new Keyword("조용한", 0),
-                new Keyword("24시간", 0)
+                new Keyword("조용한", 0L),
+                new Keyword("24시간", 0L)
         );
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
@@ -91,10 +95,18 @@ class UserKeywordServiceTest {
     @DisplayName("사용자 키워드 수정 - 성공")
     void updateUserKeywords_success() {
         // given
-        List<Keyword> newKeywords = List.of(
-                new Keyword("조용한", 0),
-                new Keyword("24시간", 0)
-        );
+        var newKeywords = List.of("아메리카노", "라떼");
+
+        // 기존 키워드 (삭제 대상)
+        var existingKeyword = new Keyword("콜드브루", 0L);
+        var existingUserKeyword = UserKeyword.builder()
+                .keyword(existingKeyword)
+                .build();
+        var mockUser = User.builder()
+                .id(1L)
+                .nickName("테스트")
+                .userKeywords(List.of(existingUserKeyword))
+                .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(mockUser));
 
@@ -103,15 +115,25 @@ class UserKeywordServiceTest {
 
         // then
         verify(userRepository).findById(1L);
-        verify(userKeywordRepository).deleteByUser(mockUser);
-        verify(userKeywordRepository).saveAll(anyList());
+
+        // 키워드 제거
+        verify(userKeywordRepository).deleteAll(argThat((List<UserKeyword> toDelete) ->
+                toDelete.size() == 1 && toDelete.get(0).getKeyword().word().equals("콜드브루")
+        ));
+
+        // 키워드 저장
+        verify(userKeywordRepository).saveAll(argThat((List<UserKeyword> toAdd) ->
+                toAdd.size() == 2 &&
+                        toAdd.stream().anyMatch(k -> k.getKeyword().word().equals("아메리카노")) &&
+                        toAdd.stream().anyMatch(k -> k.getKeyword().word().equals("라떼"))
+        ));
     }
 
     @Test
     @DisplayName("사용자 키워드 수정 - 유저 없음")
     void updateUserKeywords_userNotFound() {
         // given
-        List<Keyword> newKeywords = List.of(new Keyword("조용한", 0));
+        var newKeywords = List.of("아메리카노", "라떼");
         when(userRepository.findById(999L)).thenReturn(Optional.empty());
 
         // when & then

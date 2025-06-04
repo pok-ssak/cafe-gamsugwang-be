@@ -43,6 +43,7 @@ public class BookmarkService {
                 .cafe(cafe)
                 .build();
 
+        user.getBookmarks().add(bookmark);
         bookmarkRepository.save(bookmark);
         log.info("관심목록 추가 성공 - userId={} cafeId={}", userId, cafeId);
     }

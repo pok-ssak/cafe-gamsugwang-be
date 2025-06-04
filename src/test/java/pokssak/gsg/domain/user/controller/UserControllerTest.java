@@ -9,12 +9,20 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockMultipartFile;
 import pokssak.gsg.common.s3.S3Uploader;
+import pokssak.gsg.common.vo.Keyword;
+import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
+import pokssak.gsg.domain.bookmark.entity.Bookmark;
+import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.review.dto.ReviewResponse;
+import pokssak.gsg.domain.review.entity.Review;
 import pokssak.gsg.domain.user.dto.UserProfileResponse;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
 import pokssak.gsg.domain.user.dto.UserResponse;
+import pokssak.gsg.domain.user.dto.UserUpdateRequest;
 import pokssak.gsg.domain.user.entity.JoinType;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.entity.UserKeyword;
@@ -184,9 +192,12 @@ class UserControllerTest {
     @Test
     @DisplayName("프로필 조회 성공")
     void get_my_profile() {
+        var keyword1 = new Keyword("a", 0L);
+        var keyword2 = new Keyword("b", 0L);
+
         List<UserKeyword> mockKeywords = List.of(
-                UserKeyword.builder().id(1L).build(),
-                UserKeyword.builder().id(2L).build()
+                UserKeyword.builder().id(1L).keyword(keyword1).build(),
+                UserKeyword.builder().id(2L).keyword(keyword2).build()
         );
 
         testUser = User.builder()
@@ -204,7 +215,7 @@ class UserControllerTest {
                 .email(testUser.getEmail())
                 .imageUrl(testUser.getImageUrl())
                 .joinType(testUser.getJoinType())
-                .keywordIds(List.of(1L, 2L))
+                .keywords(List.of(keyword1, keyword2))
                 .bookmarkCount(2)
                 .reviewCount(1)
                 .build();
@@ -221,13 +232,13 @@ class UserControllerTest {
     @DisplayName("프로필 수정 성공")
     void updateProfile_success() throws Exception {
         String newNickName = "newName";
-        MockMultipartFile newImage = new MockMultipartFile(
-                "image", "new.png", "image/png", "new-image".getBytes()
-        );
+        var dto = UserUpdateRequest.builder()
+                .nickname(newNickName)
+                .build();
 
-        ResponseEntity<Void> response = userController.updateProfile(testUser, newNickName, newImage);
+        ResponseEntity<Void> response = userController.updateProfile(testUser, dto);
 
-        verify(userService).updateProfile(testUser.getId(), newNickName, newImage);
+        verify(userService).updateProfile(testUser.getId(), dto);
         assertThat(response.getStatusCodeValue()).isEqualTo(204);
     }
 
@@ -244,5 +255,48 @@ class UserControllerTest {
         assertThat(response.getStatusCodeValue()).isEqualTo(204);
     }
 
+    @Test
+    @DisplayName("유저 리뷰 조회")
+    void getMyReviews_success() {
+        // given
+        var user = User.builder()
+                .id(1L)
+                .build();
+        var review = Review.builder()
+                .id(1L)
+                .user(user)
+                .build();
+        var expect = List.of(ReviewResponse.from(review, false));
+        when(userService.getMyReviews(user.getId())).thenReturn(expect);
 
+        // when
+        var result = userController.getMyReviews(user);
+
+        // then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isEqualTo(expect);
+    }
+
+    @Test
+    @DisplayName("유저 북마크 조회")
+    void getMyBookmarks_success() {
+        // given
+        var user = User.builder()
+                .id(1L)
+                .build();
+        var bookmark = Bookmark.builder()
+                .id(1L)
+                .user(user)
+                .cafe(Cafe.builder().build())
+                .build();
+        var expect = List.of(BookmarkResponse.from(bookmark));
+        when(userService.getMyBookmarks(user.getId())).thenReturn(expect);
+
+        // when
+        var result = userController.getMyBookmarks(user);
+
+        // then
+        assertThat(result.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(result.getBody()).isEqualTo(expect);
+    }
 }

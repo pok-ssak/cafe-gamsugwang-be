@@ -1,4 +1,4 @@
-package pokssak.gsg.domain.bookmark.service;
+package pokssak.gsg.domain.admin.service;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,7 +8,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import pokssak.gsg.domain.admin.entity.Admin;
 import pokssak.gsg.domain.admin.repository.AdminRepository;
-import pokssak.gsg.domain.admin.service.AdminDetailsService;
 
 import java.util.Optional;
 

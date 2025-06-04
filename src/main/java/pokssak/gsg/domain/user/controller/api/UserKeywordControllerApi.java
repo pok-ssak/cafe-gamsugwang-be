@@ -41,41 +41,41 @@ public interface UserKeywordControllerApi {
             @Parameter(hidden = true) @AuthenticationPrincipal User user
     );
 
-    @Operation(
-            summary = "사용자 키워드 수정",
-            description = "인증된 사용자의 키워드 목록을 수정합니다. 기존 키워드를 전부 대체합니다.",
-            requestBody = @RequestBody(
-                    required = true,
-                    content = @Content(
-                            mediaType = "application/json",
-                            schema = @Schema(implementation = KeywordRequest.class),
-                            examples = @ExampleObject(value = """
-                    {
-                      "keywords": [
-                        {
-                          "word": "spring",
-                          "count": 3
-                        },
-                        {
-                          "word": "java",
-                          "count": 5
-                        }
-                      ]
-                    }
-                """)
-                    )
-            ),
-            parameters = {
-                    @Parameter(name = "userId", description = "사용자 ID", example = "1")
-            },
-            responses = {
-                    @ApiResponse(responseCode = "204", description = "수정 성공"),
-                    @ApiResponse(responseCode = "400", description = "잘못된 요청")
-            }
-    )
-    @PutMapping
-    ResponseEntity<Void> updateUserKeywords(
-            @Parameter(hidden = true) @AuthenticationPrincipal User user,
-            @org.springframework.web.bind.annotation.RequestBody KeywordRequest request
-    );
+//    @Operation(
+//            summary = "사용자 키워드 수정",
+//            description = "인증된 사용자의 키워드 목록을 수정합니다. 기존 키워드를 전부 대체합니다.",
+//            requestBody = @RequestBody(
+//                    required = true,
+//                    content = @Content(
+//                            mediaType = "application/json",
+//                            schema = @Schema(implementation = KeywordRequest.class),
+//                            examples = @ExampleObject(value = """
+//                    {
+//                      "keywords": [
+//                        {
+//                          "word": "spring",
+//                          "count": 3
+//                        },
+//                        {
+//                          "word": "java",
+//                          "count": 5
+//                        }
+//                      ]
+//                    }
+//                """)
+//                    )
+//            ),
+//            parameters = {
+//                    @Parameter(name = "userId", description = "사용자 ID", example = "1")
+//            },
+//            responses = {
+//                    @ApiResponse(responseCode = "204", description = "수정 성공"),
+//                    @ApiResponse(responseCode = "400", description = "잘못된 요청")
+//            }
+//    )
+//    @PutMapping
+//    ResponseEntity<Void> updateUserKeywords(
+//            @Parameter(hidden = true) @AuthenticationPrincipal User user,
+//            @org.springframework.web.bind.annotation.RequestBody KeywordRequest request
+//    );
 }

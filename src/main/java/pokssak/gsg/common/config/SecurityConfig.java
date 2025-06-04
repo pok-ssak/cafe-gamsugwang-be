@@ -39,6 +39,10 @@ public class SecurityConfig {
         "/v3/api-docs/**"
     };
 
+    private static final String[] BLACK_LIST = {
+            "/api/v1/cafes/{cafeId}/suggest",
+    };
+
     private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
@@ -55,6 +59,7 @@ public class SecurityConfig {
             }))
 
             .authorizeHttpRequests(auth -> auth
+                    .requestMatchers(BLACK_LIST).authenticated()
                 .requestMatchers(WHITE_LIST).permitAll()
                 .anyRequest().authenticated()
             )

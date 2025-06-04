@@ -4,8 +4,7 @@ package pokssak.gsg.domain.cafe.entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import lombok.Builder;
-import lombok.Getter;
+import lombok.*;
 import org.springframework.data.elasticsearch.annotations.*;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 
@@ -15,6 +14,8 @@ import java.util.List;
 @Document(indexName = "cafe")
 @Setting(settingPath = "es/analysis-settings.json")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Builder
 public class CafeDocument {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -38,7 +38,8 @@ public class CafeService {
     private final BookmarkService bookmarkService;
 
     public Cafe getCafeById(Long cafeId) {
-        return cafeRepository.findById(cafeId).get();
+        return cafeRepository.findById(cafeId)
+                .orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
     }
 
     /**
@@ -116,11 +117,11 @@ public class CafeService {
 
     }
 
-    public CafeDocument getCafeDocument(Long cafeId) {
-        log.info("cafeId: {}", cafeId);
-        CafeDocument cafeDocument = cafeESRepository.findById(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
-        return cafeDocument;
-    }
+//    public CafeDocument getCafeDocument(Long cafeId) {
+//        log.info("cafeId: {}", cafeId);
+//        CafeDocument cafeDocument = cafeESRepository.findById(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
+//        return cafeDocument;
+//    }
 
     public void suggestCafe(Long id, Long cafeId, SuggestRequest request) {
         log.info("id: {}, cafeId: {}, suggestion: {}", id, cafeId, request);
@@ -130,9 +131,20 @@ public class CafeService {
         Cafe newCafe = SuggestRequest.toEntity(request);
         Suggestion suggestion = Suggestion.builder()
                 .userId(id)
-                .oldCafe(oldCafe)
-                .cafe(newCafe)
+                .oldCafeId(cafeId)
+                .newCafe(Suggestion.newCafeData.builder()
+                        .title(newCafe.getTitle())
+                        .info(newCafe.getInfo())
+                        .openTime(newCafe.getOpenTime())
+                        .imageUrl(newCafe.getImageUrl())
+                        .address(newCafe.getAddress())
+                        .zipcode(newCafe.getZipcode())
+                        .phoneNumber(newCafe.getPhoneNumber())
+                        .menuList(newCafe.getMenuList())
+                        .keywordList(newCafe.getKeywordList())
+                        .build())
                 .build();
+
 
         suggestionRedisRepository.save(suggestion);
     }
@@ -140,9 +152,9 @@ public class CafeService {
     public List<SearchCafeResponse> searchCafes(String query, int limit) {
         log.info("search query: {}", query);
         List<SearchCafeResponse> cafes = cafeESClient.searchByTitle(query, limit);
-        if (cafes.isEmpty()) {
-            throw new CustomException(CafeErrorCode.CAFE_NOT_FOUND);
-        }
+//        if (cafes.isEmpty()) {
+//            throw new CustomException(CafeErrorCode.CAFE_NOT_FOUND);
+//        }
         log.info("search results: {}", cafes);
         return cafes;
     }

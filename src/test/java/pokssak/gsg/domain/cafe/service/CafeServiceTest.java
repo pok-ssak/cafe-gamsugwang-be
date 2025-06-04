@@ -14,6 +14,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestMapping;
 import pokssak.gsg.common.exception.CustomException;
+import pokssak.gsg.common.vo.Keyword;
 import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
 import pokssak.gsg.domain.bookmark.repository.BookmarkRepository;
 import pokssak.gsg.domain.bookmark.service.BookmarkService;
@@ -23,6 +24,9 @@ import pokssak.gsg.domain.cafe.entity.CafeDocument;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.*;
+import pokssak.gsg.domain.user.dto.UserKeywordResponse;
+import pokssak.gsg.domain.user.entity.User;
+import pokssak.gsg.domain.user.entity.UserKeyword;
 import pokssak.gsg.domain.user.service.UserKeywordService;
 
 import java.math.BigDecimal;
@@ -44,7 +48,7 @@ class CafeServiceTest {
     private BookmarkRepository bookmarkRepository;
     @MockitoBean
     private SuggestionRedisRepository suggestionRedisRepository;
-    @Autowired
+    @MockitoBean
     private UserKeywordService userKeywordService;
     @Autowired
     private BookmarkService bookmarkService;
@@ -272,9 +276,85 @@ class CafeServiceTest {
                 );
     }
 
+    @DisplayName("유저가 인증된 경우 키워드 기반으로 카페를 추천한다.")
     @Test
-    void recommendByUserInfo() {
+    void recommendByUserInfoWithAuthenticatedUser() {
+        // given
+        User user = User.builder()
+                .id(1L)
+                .build();
+        Double lat = 37.5665;
+        Double lon = 126.9780;
+        int limit = 10;
+
+        UserKeyword.UserKeywordBuilder keyword1 = UserKeyword.builder()
+                .id(1L)
+                .user(user)
+                .keyword(Keyword.builder().word("분위기 좋은").count(1L).build());
+
+        UserKeyword.UserKeywordBuilder keyword2 = UserKeyword.builder()
+                .id(2L)
+                .user(user)
+                .keyword(Keyword.builder().word("맛있는").count(1L).build());
+
+
+        List<CafeDocument> cafeDocuments = createCafeDocuments();
+        RecommendResponse cafe1 = RecommendResponse.from(cafeDocuments.get(0));
+        RecommendResponse cafe2 = RecommendResponse.from(cafeDocuments.get(1));
+
+
+        Mockito.when(userKeywordService.getUserKeywords(user.getId()))
+                .thenReturn(List.of(
+                        UserKeywordResponse.from(keyword1.build()),
+                        UserKeywordResponse.from(keyword2.build())
+                ));
+        Mockito.when(cafeESClient.recommendByHybrid(Mockito.anyString(), Mockito.eq(lat), Mockito.eq(lon), Mockito.eq(limit)))
+                .thenReturn(List.of(cafe1, cafe2));
+
+
+        // when
+        List<RecommendResponse> result = cafeService.recommendByUserInfo(user, lat, lon, limit);
+
+        // then
+        Assertions.assertThat(result)
+                .hasSize(2)
+                .extracting("id", "title", "isBookmarked")
+                .containsExactlyInAnyOrder(
+                        Assertions.tuple(1L, "카페1", false),
+                        Assertions.tuple(2L, "카페2", false)
+                );
     }
+
+    @DisplayName("유저가 인증되지 않은 경우 기본 키워드로 카페를 추천한다.")
+    @Test
+    void recommendByUserInfoWithUnauthenticatedUser() {
+        // given
+        User user = null; // 인증되지 않은 유저
+        Double lat = 37.5665;
+        Double lon = 126.9780;
+        int limit = 10;
+
+        List<CafeDocument> cafeDocuments = createCafeDocuments();
+        RecommendResponse cafe1 = RecommendResponse.from(cafeDocuments.get(0));
+        RecommendResponse cafe2 = RecommendResponse.from(cafeDocuments.get(1));
+
+        Mockito.when(cafeESClient.recommendByHybrid(Mockito.anyString(), Mockito.eq(lat), Mockito.eq(lon), Mockito.eq(limit)))
+                .thenReturn(List.of(cafe1, cafe2));
+
+        // when
+        List<RecommendResponse> result = cafeService.recommendByUserInfo(user, lat, lon, limit);
+
+        // then
+        Assertions.assertThat(result)
+                .hasSize(2)
+                .extracting("id", "title", "isBookmarked")
+                .containsExactlyInAnyOrder(
+                        Assertions.tuple(1L, "카페1", false),
+                        Assertions.tuple(2L, "카페2", false)
+                );
+    }
+
+
 
     private List<CafeDocument> createCafeDocuments() {
         CafeDocument cd1 = CafeDocument.builder()

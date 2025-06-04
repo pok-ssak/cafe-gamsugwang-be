@@ -17,7 +17,6 @@ jobs:
 
       - name: Setup application.yml
         run: |
-          mkdir ./src/main/resources
           cd ./src/main/resources
           echo "${{ secrets.APPLICATION }}" > ./application.yml
           echo "${{ secrets.APPLICATION_DEV }}" > ./application-dev.yml

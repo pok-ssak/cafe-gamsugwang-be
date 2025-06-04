@@ -4,23 +4,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
 import org.springframework.web.multipart.MultipartFile;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.common.s3.S3Uploader;
 import pokssak.gsg.common.vo.Keyword;
+import pokssak.gsg.domain.bookmark.entity.Bookmark;
+import pokssak.gsg.domain.bookmark.repository.BookmarkRepository;
+import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.review.entity.Review;
+import pokssak.gsg.domain.review.repository.ReviewRepository;
 import pokssak.gsg.domain.user.dto.UserProfileResponse;
 import pokssak.gsg.domain.user.dto.UserRegisterRequest;
-import pokssak.gsg.domain.user.dto.UserResponse;
-import pokssak.gsg.domain.user.entity.User;
+import pokssak.gsg.domain.user.dto.UserUpdateRequest;
 import pokssak.gsg.domain.user.entity.JoinType;
+import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.exception.UserErrorCode;
 import pokssak.gsg.domain.user.repository.UserRepository;
 
@@ -28,15 +30,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
     @Mock private UserRepository userRepository;
+    @Mock private ReviewRepository reviewRepository;
+    @Mock private BookmarkRepository bookmarkRepository;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private UserKeywordService userKeywordService;
     @Mock private S3Uploader s3Uploader;
@@ -206,37 +212,18 @@ class UserServiceTest {
     @DisplayName("프로필 수정 성공")
     void updateProfile_success() {
         // given
-        MultipartFile mockImage = mock(MultipartFile.class);
         String newNickName = "updatedUser";
-        String newImageUrl = "http://image.com/updated.jpg";
-
-        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(s3Uploader.upload(mockImage)).thenReturn(newImageUrl);
-
-        // when
-        userService.updateProfile(1L, newNickName, mockImage);
-
-        // then
-        assertThat(user.getNickName()).isEqualTo(newNickName);
-        assertThat(user.getImageUrl()).isEqualTo(newImageUrl);
-        verify(userRepository).findById(1L);
-        verify(s3Uploader).upload(mockImage);
-    }
-
-    @Test
-    @DisplayName("프로필 수정 성공 - 이미지 업로드 없이 닉네임만 수정")
-    void updateProfile_success_withoutImage() {
-        // given
-        String newNickName = "nicknameOnlyUpdated";
+        var dto = UserUpdateRequest.builder()
+                .nickname(newNickName)
+                .build();
 
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
 
         // when
-        userService.updateProfile(1L, newNickName, null);
+        userService.updateProfile(1L, dto);
 
         // then
         assertThat(user.getNickName()).isEqualTo(newNickName);
-        assertThat(user.getImageUrl()).isEqualTo("http://image.com/profile.jpg"); // 기존 유지
         verify(userRepository).findById(1L);
     }
 
@@ -244,11 +231,16 @@ class UserServiceTest {
     @DisplayName("프로필 수정 실패 - 사용자 없음")
     void updateProfile_fail_notFound() {
         // given
+        var dto = UserUpdateRequest.builder()
+                .nickname("updatedUser")
+                .build();
+
+
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         // when
         CustomException exception = assertThrows(CustomException.class, () -> {
-            userService.updateProfile(1L, "newNick", null);
+            userService.updateProfile(1L, dto);
         });
 
         // then
@@ -297,5 +289,47 @@ class UserServiceTest {
         // then
         assertThat(exception.getErrorCode()).isEqualTo(UserErrorCode.NOT_FOUND);
         verify(userRepository).findById(1L);
+    }
+
+    @Test
+    @DisplayName("내 리뷰 조회 - 성공")
+    void getMyReview_success() {
+        // given
+        var userId = 1L;
+        var review = Review.builder()
+                .id(1L)
+                .user(User.builder().build())
+                .build();
+        when(reviewRepository.findByUserId(userId)).thenReturn(List.of(review));
+
+        // when
+        var result = userService.getMyReviews(userId);
+
+        // then
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).id()).isEqualTo(1L);
+    }
+
+    @Test
+    @DisplayName("내 북마크 조회 - 성공")
+    void getMyBookmarks_success() {
+        // given
+        var userId = 1L;
+        var cafe = Cafe.builder()
+                .id(1L)
+                .build();
+        var bookmark = Bookmark.builder()
+                .id(1L)
+                .cafe(cafe)
+                .user(User.builder().build())
+                .build();
+        when(bookmarkRepository.findByUserId(userId)).thenReturn(List.of(bookmark));
+
+        // when
+        var result = userService.getMyBookmarks(userId);
+
+        // then
+        assertThat(result.size()).isEqualTo(1);
+        assertThat(result.get(0).cafeId()).isEqualTo(1L);
     }
 }

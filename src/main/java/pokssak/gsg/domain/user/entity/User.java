@@ -25,6 +25,7 @@ import pokssak.gsg.domain.bookmark.entity.Bookmark;
 import pokssak.gsg.domain.review.entity.Review;
 import pokssak.gsg.domain.review.entity.ReviewLike;
 import pokssak.gsg.domain.user.dto.OAuthSignUpRequestDto;
+import pokssak.gsg.domain.user.dto.UserUpdateRequest;
 
 @Table(name = "users")
 @Builder
@@ -48,8 +49,11 @@ public class User extends BaseEntity implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private List<UserKeyword> userKeywords;
-    @OneToMany
-    private List<Bookmark> bookmarks;
+
+    @Builder.Default
+    @OneToMany(mappedBy = "user")
+    private List<Bookmark> bookmarks = new ArrayList<>();
+
     @OneToMany(mappedBy = "user")
     private List<Review> reviews;
 
@@ -74,9 +78,8 @@ public class User extends BaseEntity implements UserDetails {
         return email;
     }
 
-    public void updateProfile(String nickName, String imageUrl) {
-        this.nickName = nickName;
-        this.imageUrl = imageUrl;
+    public void updateProfile(UserUpdateRequest userUpdateRequest) {
+        this.nickName = userUpdateRequest.nickname();
     }
 
     public boolean isDeleted() {

@@ -29,6 +29,7 @@ public class SecurityConfig {
         "/api/v1/auth/signup",
         "/api/v1/auth/logout",
         "/api/v1/auth/reissue",
+        "/api/v1/auth/email-validate",
         "/api/v1/auth/oauth/kakao",
         "/api/v1/auth/oauth/naver",
         "/api/v1/auth/oauth/google",

@@ -10,6 +10,7 @@ import java.util.List;
 
 @Repository
 public interface BookmarkRepository extends JpaRepository<Bookmark, Long> {
+    List<Bookmark> findByUserId(Long userId);
     List<Bookmark> findAllByUser(User user);
     boolean existsByUserAndCafe(User user, Cafe cafe);
     void deleteByUserAndCafe(User user, Cafe cafe);

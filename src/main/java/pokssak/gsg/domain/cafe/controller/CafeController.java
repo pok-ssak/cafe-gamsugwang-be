@@ -41,9 +41,6 @@ public class CafeController {
         return ResponseEntity.ok(ApiResponse.ok(cafe));
     }
 
-
-
-
     // 카페 수정제안
     @PutMapping("/{cafeId}/suggest")
     public ResponseEntity<?> suggestCafe(

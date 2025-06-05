@@ -6,15 +6,13 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashSet;
 
-import static org.junit.jupiter.api.Assertions.*;
-
-class KeywordTest {
+class CafeKeywordTest {
 
     @DisplayName("키워드 객체의 카페 속성을 업데이트한다.")
     @Test
     void updateCafe() {
         // Given
-        Keyword keyword = Keyword.builder()
+        CafeKeyword cafeKeyword = CafeKeyword.builder()
                 .id(1L)
                 .keyword("편안한")
                 .count(1)
@@ -27,10 +25,10 @@ class KeywordTest {
                 .build();
 
         // When
-        keyword.updateCafe(cafe);
+        cafeKeyword.updateCafe(cafe);
 
         // Then
-        Assertions.assertThat(keyword.getCafe())
+        Assertions.assertThat(cafeKeyword.getCafe())
                 .extracting("id", "title")
                 .containsExactlyInAnyOrder(1L, "CafeA");
     }

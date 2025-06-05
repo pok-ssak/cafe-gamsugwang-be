@@ -53,7 +53,7 @@ public class Cafe extends BaseEntity {
     @Builder.Default
     @OneToMany(mappedBy = "cafe", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @BatchSize(size = 50)
-    private Set<Keyword> keywordList = new HashSet<>();
+    private Set<CafeKeyword> cafeKeywordList = new HashSet<>();
 
 
     public void addMenu(Menu menu) {
@@ -61,8 +61,41 @@ public class Cafe extends BaseEntity {
         menu.updateCafe(this);
     }
 
-    public void addKeyword(Keyword keyword) {
-        keywordList.add(keyword);
-        keyword.updateCafe(this);
+    public void addKeyword(CafeKeyword cafeKeyword) {
+        cafeKeywordList.add(cafeKeyword);
+        cafeKeyword.updateCafe(this);
     }
+
+    public void updateFromSuggestion(Suggestion.NewCafeData newCafeData, Set<CafeKeyword> cafeKeywords, Set<Menu> menus) {
+        updateInfo(newCafeData);
+        updateMenus(menus);
+        updateKeywords(cafeKeywords);
+    }
+
+    private void updateInfo(Suggestion.NewCafeData data) {
+        this.title = data.getTitle();
+        this.info = data.getInfo();
+        this.openTime = data.getOpenTime();
+        this.imageUrl = data.getImageUrl();
+        this.address = data.getAddress();
+        this.zipcode = data.getZipcode();
+        this.phoneNumber = data.getPhoneNumber();
+    }
+
+    public void updateMenus(Set<Menu> menus) {
+        this.menuList.clear();
+        for (Menu menu : menus) {
+            menu.updateCafe(this);
+            this.menuList.add(menu);
+        }
+    }
+
+    public void updateKeywords(Set<CafeKeyword> cafeKeywords) {
+        this.cafeKeywordList.clear();
+        for (CafeKeyword cafeKeyword : cafeKeywords) {
+            cafeKeyword.updateCafe(this);
+            this.cafeKeywordList.add(cafeKeyword);
+        }
+    }
+
 }

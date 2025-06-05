@@ -13,16 +13,20 @@ import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
 import pokssak.gsg.domain.bookmark.service.BookmarkService;
 import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
+import pokssak.gsg.domain.cafe.repository.KeywordRepository;
 import pokssak.gsg.domain.cafe.repository.SuggestionRedisRepository;
 import pokssak.gsg.domain.user.dto.UserKeywordResponse;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.UserKeywordService;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,6 +38,7 @@ public class CafeServiceV2 {
     private final CafeESRepository cafeESRepository;
     private final CafeRepository cafeRepository;
     private final SuggestionRedisRepository suggestionRedisRepository;
+    private final KeywordRepository keywordRepository;
     private final UserKeywordService userKeywordService;
     private final BookmarkService bookmarkService;
 
@@ -124,26 +129,37 @@ public class CafeServiceV2 {
 
     public void suggestCafe(Long id, Long cafeId, SuggestRequest request) {
         log.info("id: {}, cafeId: {}, suggestion: {}", id, cafeId, request);
-        Cafe oldCafe = cafeRepository.findByIdWithMenusAndKeywords(cafeId)
+        cafeRepository.findByIdWithMenusAndKeywords(cafeId)
                 .orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
 
-        Cafe newCafe = SuggestRequest.toEntity(request);
+        Set<MenuDto> menuDtos = request.getMenuList().stream()
+                .map(m -> new MenuDto(m.getName(), m.getMenuImageUrl(), m.getPrice(), m.getModifier()))
+                .collect(Collectors.toSet());
+
+        Set<KeywordDto> keywordDtos = request.getCafeKeywordList().stream()
+                .map(k -> {
+                    CafeKeyword cafeKeyword = keywordRepository.findById(k.getId())
+                            .orElseThrow(() -> new CustomException(CafeErrorCode.KEYWORD_NOT_FOUND));
+                    return new KeywordDto(cafeKeyword.getId(), cafeKeyword.getKeyword(), cafeKeyword.getCount());
+                })
+                .collect(Collectors.toSet());
+
         Suggestion suggestion = Suggestion.builder()
                 .userId(id)
                 .oldCafeId(cafeId)
-                .newCafe(Suggestion.newCafeData.builder()
-                        .title(newCafe.getTitle())
-                        .info(newCafe.getInfo())
-                        .openTime(newCafe.getOpenTime())
-                        .imageUrl(newCafe.getImageUrl())
-                        .address(newCafe.getAddress())
-                        .zipcode(newCafe.getZipcode())
-                        .phoneNumber(newCafe.getPhoneNumber())
-                        .menuList(newCafe.getMenuList())
-                        .keywordList(newCafe.getKeywordList())
+                .createdAt(LocalDateTime.now())
+                .newCafe(Suggestion.NewCafeData.builder()
+                        .title(request.getTitle())
+                        .info(request.getInfo())
+                        .openTime(request.getOpenTime())
+                        .imageUrl(request.getImageUrl())
+                        .address(request.getAddress())
+                        .zipcode(request.getZipcode())
+                        .phoneNumber(request.getPhoneNumber())
+                        .menuList(menuDtos)
+                        .keywordList(keywordDtos)
                         .build())
                 .build();
-
 
         suggestionRedisRepository.save(suggestion);
     }

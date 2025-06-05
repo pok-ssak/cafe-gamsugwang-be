@@ -5,9 +5,8 @@ import org.springframework.http.HttpStatus;
 import pokssak.gsg.common.exception.ErrorCode;
 
 @AllArgsConstructor
-public enum CafeErrorCode implements ErrorCode {
-    CAFE_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 카페입니다."),
-    KEYWORD_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 키워드입니다.");
+public enum SuggestionErrorCode implements ErrorCode {
+    SUGGESTION_NOT_FOUND(HttpStatus.NOT_FOUND, "존재하지 않는 제안입니다.");
 
 
     private final HttpStatus httpStatus;

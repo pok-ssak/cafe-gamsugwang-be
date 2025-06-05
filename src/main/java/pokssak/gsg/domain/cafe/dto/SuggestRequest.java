@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import pokssak.gsg.domain.cafe.entity.Cafe;
-import pokssak.gsg.domain.cafe.entity.Keyword;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 import pokssak.gsg.domain.cafe.entity.Menu;
 
 import java.math.BigDecimal;
@@ -28,7 +28,7 @@ public class SuggestRequest {
     private BigDecimal lon;
     private String phoneNumber;
     private Set<Menu> menuList;
-    private Set<Keyword> keywordList;
+    private Set<CafeKeyword> cafeKeywordList;
 
 
     public static Cafe toEntity(SuggestRequest request) {
@@ -45,7 +45,7 @@ public class SuggestRequest {
                 .lon(request.getLon())
                 .phoneNumber(request.getPhoneNumber())
                 .menuList(request.getMenuList())
-                .keywordList(request.getKeywordList())
+                .cafeKeywordList(request.getCafeKeywordList())
                 .build();
     }
 }

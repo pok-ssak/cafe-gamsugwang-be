@@ -45,5 +45,6 @@ jobs:
             docker system prune -a -f
             docker rmi ${{ secrets.DOCKER_USERNAME }}/gsg-be:latest
             docker pull ${{ secrets.DOCKER_USERNAME }}/gsg-be:latest
+            docker rm -f  ${{ secrets.DOCKER_USERNAME }}/gsg-be:latest
             docker run -d -p 8080:8080 \
             ${{ secrets.DOCKERHUB_USERNAME }}/gsg-be:latest

@@ -4,6 +4,7 @@ package pokssak.gsg.domain.cafe.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.common.dto.ApiResponse;
 import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.service.CafeService;
+import pokssak.gsg.domain.cafe.service.CafeServiceV2;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
 
@@ -19,9 +21,9 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/v1/cafes")
-public class CafeController {
-    private final CafeService cafeService;
+@RequestMapping("/api/v2/cafes")
+public class CafeControllerV2 {
+    private final CafeServiceV2 cafeService;
     private final ReviewService reviewService;
     private final EmbeddingModel embeddingModel;
 
@@ -63,9 +65,10 @@ public class CafeController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<?> searchCafes(@RequestParam String query, @RequestParam(required = false, defaultValue = "50") int limit) {
-        log.info("search query: {}, limit: {}", query, limit);
-        List<SearchCafeResponse> searchCafeResponses = cafeService.searchCafes(query, limit);
+    public ResponseEntity<?> searchCafes(@RequestParam String query,
+                                         Pageable pageable) {
+        log.info("search query: {}, limit: {}", query, pageable.getPageSize());
+        Page<SearchCafeResponse> searchCafeResponses = cafeService.searchCafes(query, pageable);
         return ResponseEntity.ok(ApiResponse.ok(searchCafeResponses));
 
     }
@@ -77,21 +80,23 @@ public class CafeController {
             @RequestParam String keyword,
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lon,
-            @RequestParam(defaultValue = "10") int limit){
+            @RequestParam(defaultValue = "10") int limit,
+            Pageable pageable){
 
         log.info("keyword: {}, lat: {}, lon: {}, limit: {}", keyword, lat, lon, limit);
-        List<RecommendResponse> results;
+        Page<RecommendResponse> results;
 
         Long userId = getUserId(user);
 
         switch (option) {
             case "location":
-                results = cafeService.recommendByLocation(userId, lat, lon, limit);
+                results = cafeService.recommendByLocation(userId, lat, lon, limit, pageable);
+                break;
             case "keyword":
-                results = cafeService.recommendByKeyword(userId, keyword, limit);
+                results = cafeService.recommendByKeyword(userId, keyword, limit, pageable);
                 break;
             case "hybrid":
-                results = cafeService.recommendByKeyword(userId, keyword, limit); // 가중치 기능구현
+                results = cafeService.recommendByKeyword(userId, keyword, limit, pageable); // 가중치 기능구현
                 break;
             default:
                 return ResponseEntity.badRequest().body("invalid option");
@@ -104,9 +109,9 @@ public class CafeController {
             @AuthenticationPrincipal User user,
             @RequestParam(required = false) Double lat,
             @RequestParam(required = false) Double lon,
-            @RequestParam(defaultValue = "10") int limit) {
+            Pageable pageable) {
 
-        log.info("lat: {}, lon: {}, limit: {}",lat, lon, limit);
+        log.info("lat: {}, lon: {}, limit: {}",lat, lon);
         log.info("User: {}", user);
         // 임베딩을 위해 String 으로 변환
 //        String keywords = user.getUserKeywords().stream()
@@ -114,7 +119,7 @@ public class CafeController {
 //                .collect(Collectors.joining(" "));
 //        log.info("user keywords: {}", userKeywordService);
 
-        List<RecommendResponse> recommendResponses = cafeService.recommendByUserInfo(user, lat, lon, limit);
+        Page<RecommendResponse> recommendResponses = cafeService.recommendByUserInfo(user, lat, lon, pageable);
         return ResponseEntity.ok(ApiResponse.ok(recommendResponses));
     }
 

@@ -8,8 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.ai.embedding.EmbeddingResponse;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -101,6 +100,31 @@ public class CafeESClient {
     //    "num_candidates": 1000
     //  }
     //}
+    public Page<RecommendResponse> recommendByKeyword(String keyword, int size, Pageable pageable) {
+        List<Float> embedding = getEmbedding(keyword);
+
+
+        NativeQuery query = NativeQuery.builder()
+                .withKnnSearches(k -> k
+                        .field("keywordVector")
+                        .queryVector(embedding)
+                        .k(100)
+                        .numCandidates(1000))
+                .withPageable(pageable)
+                .withSort(Sort.by(Sort.Order.desc("_score")))
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address","imgUrl","reviewCount"}, null))
+                .build();
+        SearchHits<CafeDocument> hits = operations.search(query, CafeDocument.class);
+        log.info("hits: {}", hits);
+        List<RecommendResponse> docs = hits.stream()
+                .map(SearchHit::getContent)
+                .map(RecommendResponse::from)
+                .toList();
+
+        return new PageImpl<>(docs, pageable, hits.getTotalHits());
+
+    }
+
     public List<RecommendResponse> recommendByKeyword(String keyword, int size) {
         List<Float> embedding = getEmbedding(keyword);
 
@@ -117,12 +141,13 @@ public class CafeESClient {
                 .build();
         SearchHits<CafeDocument> hits = operations.search(query, CafeDocument.class);
         log.info("hits: {}", hits);
-        return hits.stream()
+        List<RecommendResponse> docs = hits.stream()
                 .map(SearchHit::getContent)
                 .map(RecommendResponse::from)
                 .toList();
-
+        return docs;
     }
+
 
     public List<RecommendResponse> recommendByHybrid(String keyword, Double lat, Double lon, int limit) {
         List<Float> embedding = getEmbedding(keyword);
@@ -177,7 +202,61 @@ public class CafeESClient {
 
     }
 
-    public List<RecommendResponse> recommendByLocation(Double lat, Double lon, int radius, int size) {
+    public Page<RecommendResponse> recommendByHybrid(String keyword, Double lat, Double lon, Pageable pageable) {
+        List<Float> embedding = getEmbedding(keyword);
+
+        NativeQuery query = NativeQuery.builder()
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address","imgUrl","reviewCount"}, null))
+                .withKnnSearches(k -> k
+                        .field("keywordVector")
+                        .queryVector(embedding)
+                        .k(pageable.getPageSize())
+                        .numCandidates(1000))
+                .withQuery(q -> q
+                        .functionScore(fs -> fs
+                                .scoreMode(FunctionScoreMode.Sum)
+                                .boostMode(FunctionBoostMode.Replace)
+                        )
+                )
+                .withQuery(Query.of(q -> q.functionScore(fs -> fs
+                        .scoreMode(FunctionScoreMode.Sum)
+                        .boostMode(FunctionBoostMode.Replace)
+                        .functions(List.of(
+                                FunctionScore.of(fn -> fn
+                                        .fieldValueFactor(fvf -> fvf
+                                                .field("_score")
+                                                .factor(0.8)
+                                                .missing(0.0)))
+                                ,
+                                FunctionScore.of(fn -> fn
+                                        .filter(f -> f.nested(n -> n
+                                                .path("address")
+                                                .query(nq -> nq.geoDistance(g -> g
+                                                        .field("address.location")
+                                                        .distance("5km")
+                                                        .location(loc -> loc
+                                                                .latlon(LatLonGeoLocation.of(l -> l
+                                                                        .lat(lat)
+                                                                        .lon(lon)
+                                                                ))
+                                                        )))))
+                                        .weight(0.2)
+                                ))
+                        ))))
+                .withPageable(pageable)
+                .build();
+
+        SearchHits<CafeDocument> hits = operations.search(query, CafeDocument.class);
+        log.info("hits: {}", hits);
+        List<RecommendResponse> docs = hits.stream()
+                .map(SearchHit::getContent)
+                .map(RecommendResponse::from)
+                .toList();
+
+        return new PageImpl<>(docs, pageable, hits.getTotalHits());
+    }
+
+    public Page<RecommendResponse> recommendByLocation(Double lat, Double lon, int radius, int size, Pageable pageable) {
         NativeQuery nativeQuery = NativeQuery.builder()
                 .withQuery(q -> q.bool(b -> b
                         .filter(f -> f.nested(n -> n
@@ -191,16 +270,46 @@ public class CafeESClient {
                                                                 .lon(lon)
                                                         ))
                                         )))))))
+                .withPageable(pageable)
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address","reviewCount","imgUrl"}, null))
+                .build();
+
+        SearchHits<CafeDocument> hits = operations.search(nativeQuery, CafeDocument.class);
+        log.info("hits: {}", hits);
+        long totalHits = hits.getTotalHits();
+        List<RecommendResponse> docs = hits.stream()
+                .map(SearchHit::getContent)
+                .map(RecommendResponse::from)
+                .toList();
+        return new PageImpl<>(docs, pageable, totalHits);
+    }
+
+    public List<RecommendResponse> recommendByLocation(Double lat, Double lon, int radius, int size) {
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(q -> q.bool(b -> b
+                        .filter(f -> f.nested(n -> n
+                                .path("address")
+                                .query(nq -> nq.geoDistance(g -> g
+                                        .field("address.location")
+                                        .distance(radius+ "km")
+                                        .location(loc -> loc
+                                                .latlon(LatLonGeoLocation.of(l -> l
+                                                        .lat(lat)
+                                                        .lon(lon)
+                                                ))
+                                        )))))))
                 .withPageable(PageRequest.of(0, size))
                 .withSourceFilter(new FetchSourceFilter(new String[]{"title","keywords","rate","address","reviewCount","imgUrl"}, null))
                 .build();
 
         SearchHits<CafeDocument> hits = operations.search(nativeQuery, CafeDocument.class);
         log.info("hits: {}", hits);
-        return hits.stream()
+        long totalHits = hits.getTotalHits();
+        List<RecommendResponse> docs = hits.stream()
                 .map(SearchHit::getContent)
                 .map(RecommendResponse::from)
                 .toList();
+        return docs;
     }
 
     public List<SearchCafeResponse> searchByTitle(String query, int limit) {
@@ -222,5 +331,23 @@ public class CafeESClient {
                 .toList();
     }
 
+    public Page<SearchCafeResponse> searchByTitle(String query, Pageable pageable) {
+        NativeQuery nativeQuery = NativeQuery.builder()
+                .withQuery(q -> q.match(m -> m
+                        .field("title")
+                        .query(query)
+                        .operator(Operator.And)))
+                .withPageable(pageable)
+                .withSort(Sort.by(Sort.Order.desc("reviewCount")))
+                .withSourceFilter(new FetchSourceFilter(new String[]{"title", "keywords", "rate", "address", "reviewCount", "imgUrl"}, null))
+                .build();
 
+        SearchHits<CafeDocument> hits = operations.search(nativeQuery, CafeDocument.class);
+        log.info("hits: {}", hits);
+        List<SearchCafeResponse> docs = hits.stream()
+                .map(SearchHit::getContent)
+                .map(SearchCafeResponse::from)
+                .toList();
+        return new PageImpl<>(docs, pageable, hits.getTotalHits());
+    }
 }

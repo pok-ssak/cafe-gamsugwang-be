@@ -13,7 +13,6 @@ import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
 import pokssak.gsg.domain.bookmark.service.BookmarkService;
 import pokssak.gsg.domain.cafe.dto.*;
 import pokssak.gsg.domain.cafe.entity.Cafe;
-import pokssak.gsg.domain.cafe.entity.CafeDocument;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
@@ -30,7 +29,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 @Transactional(readOnly = true)
-public class CafeService {
+public class CafeServiceV2 {
     private final CafeESClient cafeESClient;
     private final CafeESRepository cafeESRepository;
     private final CafeRepository cafeRepository;
@@ -62,14 +61,13 @@ public class CafeService {
      * @param limit
      * @return
      */
-    public List<RecommendResponse> recommendByKeyword(Long userId, String keyword, int limit) {
+    public Page<RecommendResponse> recommendByKeyword(Long userId, String keyword, int limit, Pageable pageable) {
         log.info("keyword: {}, limit: {}", keyword, limit);
 
-        List<RecommendResponse> cafeDocuments = cafeESClient.recommendByKeyword(keyword, limit);
-        List<RecommendResponse> recommendResponses = updateBookmarkStatus(userId, cafeDocuments);
-
+        Page<RecommendResponse> esPage = cafeESClient.recommendByKeyword(keyword, limit, pageable);
+        List<RecommendResponse> recommendResponses = updateBookmarkStatus(userId, esPage.getContent());
         log.info("cafeDocuments = {}", recommendResponses);
-        return recommendResponses;
+        return new PageImpl<>(recommendResponses, pageable, esPage.getTotalElements());
     }
 
     private List<RecommendResponse> updateBookmarkStatus(Long userId, List<RecommendResponse> cafeDocuments) {
@@ -90,14 +88,14 @@ public class CafeService {
      * @param limit
      * @return
      */
-    public List<RecommendResponse> recommendByLocation(Long userId, Double lat, Double lon, int limit) {
+    public Page<RecommendResponse> recommendByLocation(Long userId, Double lat, Double lon, int limit, Pageable pageable) {
         log.info("lat: {}, lon: {}, limit: {}", lat, lon, limit);
 
-        List<RecommendResponse> esPage = cafeESClient.recommendByLocation(lat, lon, 20, limit);
+        Page<RecommendResponse> esPage = cafeESClient.recommendByLocation(lat, lon, 20, limit, pageable);
 
-        List<RecommendResponse> recommendResponses = updateBookmarkStatus(userId, esPage);
+        List<RecommendResponse> recommendResponses = updateBookmarkStatus(userId, esPage.getContent());
         log.info("recommendResponse = {}", recommendResponses);
-        return recommendResponses;
+        return new PageImpl<>(recommendResponses, pageable, esPage.getTotalElements());
     }
 
     public Page<GetCafeResponse> getCafes(Pageable pageable) {
@@ -150,9 +148,9 @@ public class CafeService {
         suggestionRedisRepository.save(suggestion);
     }
 
-    public List<SearchCafeResponse> searchCafes(String query, int limit) {
+    public Page<SearchCafeResponse> searchCafes(String query, Pageable pageable) {
         log.info("search query: {}", query);
-        List<SearchCafeResponse> cafes = cafeESClient.searchByTitle(query, limit);
+        Page<SearchCafeResponse> cafes = cafeESClient.searchByTitle(query, pageable);
 //        if (cafes.isEmpty()) {
 //            throw new CustomException(CafeErrorCode.CAFE_NOT_FOUND);
 //        }
@@ -160,7 +158,7 @@ public class CafeService {
         return cafes;
     }
 
-    public List<RecommendResponse> recommendByUserInfo(User user, Double lat, Double lon, int limit) {
+    public Page<RecommendResponse> recommendByUserInfo(User user, Double lat, Double lon, Pageable pageable) {
         String keywords = "카페";
         if(user != null){
             List<UserKeywordResponse> userKeywords = userKeywordService.getUserKeywords(user.getId());
@@ -171,17 +169,22 @@ public class CafeService {
                         .collect(Collectors.joining(" "));
             }
             log.info("user keywords: {}", keywords);
-            List<RecommendResponse> recommendResponses = cafeESClient.recommendByHybrid(keywords, lat, lon, limit);
+            Page<RecommendResponse> recommendResponses = cafeESClient.recommendByHybrid(keywords, lat, lon, pageable);
             List<BookmarkResponse> userBookmarks = bookmarkService.getUserBookmarks(user.getId());
             // 북마크 여부 추가
-            return recommendResponses.stream()
-                    .peek(cafe -> cafe.setIsBookmarked(userBookmarks.stream()
-                            .anyMatch(bookmark -> bookmark.cafeId().equals(cafe.getId()))))
-                    .toList();
+            return recommendResponses.map(cafe -> {
+                cafe.setIsBookmarked(userBookmarks.stream()
+                        .anyMatch(bookmark -> bookmark.cafeId().equals(cafe.getId())));
+                return cafe;
+            });
+//            return recommendResponses.stream()
+//                    .peek(cafe -> cafe.setIsBookmarked(userBookmarks.stream()
+//                            .anyMatch(bookmark -> bookmark.cafeId().equals(cafe.getId()))))
+//                    .toList();
 
         }else{
             log.info("User is not authenticated, using default keywords.");
-            return cafeESClient.recommendByHybrid(keywords, lat, lon, limit);
+            return cafeESClient.recommendByHybrid(keywords, lat, lon, pageable);
         }
     }
 }

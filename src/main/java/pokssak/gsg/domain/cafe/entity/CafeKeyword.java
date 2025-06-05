@@ -13,7 +13,7 @@ import pokssak.gsg.common.entity.BaseEntity;
 @NoArgsConstructor
 @Builder
 @Table(name = "keywords")
-public class Keyword extends BaseEntity {
+public class CafeKeyword extends BaseEntity {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -25,7 +25,7 @@ public class Keyword extends BaseEntity {
 
     public void updateCafe(Cafe cafe) {
         this.cafe = cafe;
-        if (!cafe.getKeywordList().contains(this)) {
+        if (!cafe.getCafeKeywordList().contains(this)) {
             cafe.addKeyword(this);
         }
     }

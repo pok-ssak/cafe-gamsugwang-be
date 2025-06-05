@@ -2,7 +2,7 @@ package pokssak.gsg.domain.cafe.dto;
 
 import lombok.Builder;
 import lombok.Getter;
-import pokssak.gsg.domain.cafe.entity.Keyword;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 
 @Getter
 @Builder
@@ -11,11 +11,11 @@ public class KeywordResponse {
     private String keyword;
     private Integer count;
 
-    public static KeywordResponse from(Keyword keyword) {
+    public static KeywordResponse from(CafeKeyword cafeKeyword) {
         return KeywordResponse.builder()
-                .id(keyword.getId())
-                .keyword(keyword.getKeyword())
-                .count(keyword.getCount())
+                .id(cafeKeyword.getId())
+                .keyword(cafeKeyword.getKeyword())
+                .count(cafeKeyword.getCount())
                 .build();
     }
 }

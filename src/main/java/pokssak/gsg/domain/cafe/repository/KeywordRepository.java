@@ -1,8 +1,8 @@
 package pokssak.gsg.domain.cafe.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
-import pokssak.gsg.domain.cafe.entity.Keyword;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 
-public interface KeywordRepository extends JpaRepository<Keyword, Long> {
+public interface KeywordRepository extends JpaRepository<CafeKeyword, Long> {
 
 }

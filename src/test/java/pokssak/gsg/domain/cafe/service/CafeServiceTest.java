@@ -5,35 +5,30 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.elasticsearch.core.geo.GeoPoint;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestMapping;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.common.vo.Keyword;
-import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
 import pokssak.gsg.domain.bookmark.repository.BookmarkRepository;
 import pokssak.gsg.domain.bookmark.service.BookmarkService;
 import pokssak.gsg.domain.cafe.dto.*;
-import pokssak.gsg.domain.cafe.entity.Cafe;
-import pokssak.gsg.domain.cafe.entity.CafeDocument;
-import pokssak.gsg.domain.cafe.entity.Suggestion;
-import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
+import pokssak.gsg.domain.cafe.entity.*;
 import pokssak.gsg.domain.cafe.repository.*;
 import pokssak.gsg.domain.user.dto.UserKeywordResponse;
 import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.entity.UserKeyword;
+import pokssak.gsg.domain.user.repository.UserRepository;
 import pokssak.gsg.domain.user.service.UserKeywordService;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.Set;
 
 @SpringBootTest
 @Transactional
@@ -48,19 +43,23 @@ class CafeServiceTest {
     private BookmarkRepository bookmarkRepository;
     @MockitoBean
     private SuggestionRedisRepository suggestionRedisRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @MockitoBean
+    private KeywordRepository keywordRepository;
     @MockitoBean
     private UserKeywordService userKeywordService;
-    @Autowired
+    @MockitoBean
     private BookmarkService bookmarkService;
     @Autowired
     private CafeService cafeService;
+
+    private Cafe testCafe;
 
     @BeforeEach
     void setUp() {
         bookmarkRepository.deleteAllInBatch();
         cafeRepository.deleteAllInBatch();
-
-
 
     }
 
@@ -120,20 +119,43 @@ class CafeServiceTest {
     @Test
     void recommendByKeyword() {
         // given
-        Long userId = 1L;
         String keyword = "카페";
         int limit = 10;
+
+        User user = User.builder()
+                .nickName("테스트유저")
+                .email("test@example.com")
+                .isDeleted(false)
+                .build();
+
+        user = userRepository.save(user);
+        Long savedUserId = user.getId();
 
         List<CafeDocument> cafeDocuments = createCafeDocuments();
 
         RecommendResponse cafe1 = RecommendResponse.from(cafeDocuments.get(0));
         RecommendResponse cafe2 = RecommendResponse.from(cafeDocuments.get(1));
 
-        Mockito.when(cafeESClient.recommendByKeyword(Mockito.anyString(), Mockito.anyInt()))
+        Mockito.when(cafeESClient.recommendByKeyword(keyword, limit))
                 .thenReturn(List.of(cafe1, cafe2));
 
+        // BookmarkService mock 처리
+        Mockito.when(bookmarkService.getUserBookmarks(savedUserId))
+                .thenReturn(Collections.emptyList());
+
+        Mockito.when(userKeywordService.getUserKeywords(savedUserId))
+                .thenReturn(List.of(
+                        UserKeywordResponse.from(
+                                UserKeyword.builder()
+                                        .id(1L)
+                                        .user(user)
+                                        .keyword(Keyword.builder().word("분위기 좋은").count(1L).build())
+                                        .build()
+                        )
+                ));
+
         // when
-        List<RecommendResponse> recommendResponses = cafeService.recommendByKeyword(userId, keyword, limit);
+        List<RecommendResponse> recommendResponses = cafeService.recommendByKeyword(savedUserId, keyword, limit);
 
         // then
         Assertions.assertThat(recommendResponses)
@@ -145,12 +167,11 @@ class CafeServiceTest {
                 );
     }
 
+
     @DisplayName("위치 기반으로 카페를 추천한다.")
     @Test
     void recommendByLocation() {
-        // given
         Long userId = 1L;
-        String keyword = "카페";
         int limit = 10;
         double lat = 37.5665;
         double lon = 126.9780;
@@ -160,8 +181,11 @@ class CafeServiceTest {
         RecommendResponse cafe1 = RecommendResponse.from(cafeDocuments.get(0));
         RecommendResponse cafe2 = RecommendResponse.from(cafeDocuments.get(1));
 
-        Mockito.when(cafeESClient.recommendByLocation(Mockito.anyDouble(), Mockito.anyDouble(), Mockito.anyInt(), Mockito.anyInt()))
+        Mockito.when(cafeESClient.recommendByLocation(Mockito.eq(lat), Mockito.eq(lon), Mockito.anyInt(), Mockito.eq(limit)))
                 .thenReturn(List.of(cafe1, cafe2));
+
+        Mockito.when(bookmarkService.getUserBookmarks(userId))
+                .thenReturn(Collections.emptyList());
 
         // when
         List<RecommendResponse> recommendResponses = cafeService.recommendByLocation(userId, lat, lon, limit);
@@ -169,10 +193,10 @@ class CafeServiceTest {
         // then
         Assertions.assertThat(recommendResponses)
                 .hasSize(2)
-                .extracting("id", "title")
+                .extracting("id", "title", "isBookmarked")
                 .containsExactlyInAnyOrder(
-                        Assertions.tuple(1L, "카페1"),
-                        Assertions.tuple(2L, "카페2")
+                        Assertions.tuple(1L, "카페1", false),
+                        Assertions.tuple(2L, "카페2", false)
                 );
     }
 
@@ -225,6 +249,20 @@ class CafeServiceTest {
         // given
         Long userId = 1L;
         Long cafeId = 1L;
+
+        Menu menu = Menu.builder()
+                .name("아메리카노")
+                .menuImageUrl("https://example.com/menu.jpg")
+                .price(4500)
+                .modifier("ICE")
+                .build();
+
+        CafeKeyword cafeKeyword = CafeKeyword.builder()
+                .id(1L)
+                .keyword("조용한")
+                .count(100)
+                .build();
+
         SuggestRequest request = SuggestRequest.builder()
                 .title("새 카페")
                 .info("새로운 정보")
@@ -232,6 +270,8 @@ class CafeServiceTest {
                 .imageUrl("https://example.com/new-image.jpg")
                 .address("서울특별시 강남구")
                 .phoneNumber("010-1234-5678")
+                .menuList(Set.of(menu))
+                .cafeKeywordList(Set.of(cafeKeyword))
                 .build();
 
         Cafe oldCafe = Cafe.builder()
@@ -241,6 +281,9 @@ class CafeServiceTest {
 
         Mockito.when(cafeRepository.findByIdWithMenusAndKeywords(Mockito.eq(cafeId)))
                 .thenReturn(Optional.of(oldCafe));
+
+        Mockito.when(keywordRepository.findById(1L))
+                .thenReturn(Optional.of(cafeKeyword));
 
         // when
         cafeService.suggestCafe(userId, cafeId, request);

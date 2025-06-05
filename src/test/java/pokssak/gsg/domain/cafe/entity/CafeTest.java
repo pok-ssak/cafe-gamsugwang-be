@@ -4,10 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 class CafeTest {
 
@@ -49,24 +46,24 @@ class CafeTest {
                 .menuList(new HashSet<>())
                 .build();
 
-        Keyword keyword1 = Keyword.builder()
+        CafeKeyword cafeKeyword1 = CafeKeyword.builder()
                 .keyword("편안한")
                 .count(1)
                 .cafe(cafe)
                 .build();
 
-        Keyword keyword2 = Keyword.builder()
+        CafeKeyword cafeKeyword2 = CafeKeyword.builder()
                 .keyword("아늑한")
                 .count(2)
                 .cafe(cafe)
                 .build();
         // When
-        cafe.addKeyword(keyword1);
-        cafe.addKeyword(keyword2);
+        cafe.addKeyword(cafeKeyword1);
+        cafe.addKeyword(cafeKeyword2);
 
         // Then
-        Assertions.assertThat(cafe.getKeywordList()).hasSize(2)
-                .extracting(Keyword::getKeyword, Keyword::getCount)
+        Assertions.assertThat(cafe.getCafeKeywordList()).hasSize(2)
+                .extracting(CafeKeyword::getKeyword, CafeKeyword::getCount)
                 .containsExactlyInAnyOrder(
                         Assertions.tuple("편안한", 1),
                         Assertions.tuple("아늑한", 2)

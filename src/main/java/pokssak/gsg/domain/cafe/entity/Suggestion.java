@@ -24,12 +24,15 @@ public class Suggestion {
     private Long userId;
     private Long oldCafeId;
     @JsonIgnore
-    private newCafeData newCafe;
+    private NewCafeData newCafe;
     private LocalDateTime createdAt;
 
 
+    @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     @Builder
-    public static class newCafeData {
+    public static class NewCafeData {
         private String title;
         private String info;
         private String openTime;

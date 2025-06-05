@@ -47,5 +47,5 @@ jobs:
             docker pull ${{ secrets.DOCKER_USERNAME }}/gsg-be:latest
             docker rm -f gsg-be
             docker run -d -p 8080:8080 \
-            --name gsg-be
+            --name gsg-be \
             ${{ secrets.DOCKERHUB_USERNAME }}/gsg-be:latest

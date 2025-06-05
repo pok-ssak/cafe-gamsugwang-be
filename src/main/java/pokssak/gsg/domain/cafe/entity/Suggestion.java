@@ -1,14 +1,13 @@
 package pokssak.gsg.domain.cafe.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.redis.core.RedisHash;
+import pokssak.gsg.domain.cafe.dto.KeywordDto;
+import pokssak.gsg.domain.cafe.dto.MenuDto;
 
 import java.time.LocalDateTime;
 import java.util.Set;
@@ -23,7 +22,6 @@ public class Suggestion {
     private Long id;
     private Long userId;
     private Long oldCafeId;
-    @JsonIgnore
     private NewCafeData newCafe;
     private LocalDateTime createdAt;
 
@@ -40,7 +38,7 @@ public class Suggestion {
         private String address;
         private String zipcode;
         private String phoneNumber;
-        private Set<Menu> menuList;
-        private Set<Keyword> keywordList;
+        private Set<MenuDto> menuList;
+        private Set<KeywordDto> keywordList;
     }
 }

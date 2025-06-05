@@ -11,6 +11,6 @@ import java.util.Optional;
 
 @Repository
 public interface CafeRepository extends JpaRepository<Cafe, Long> {
-    @Query("select c from Cafe c join fetch c.menuList m join fetch c.keywordList k where c.id = :cafeId")
+    @Query("select c from Cafe c join fetch c.menuList m join fetch c.cafeKeywordList k where c.id = :cafeId")
     Optional<Cafe> findByIdWithMenusAndKeywords(Long cafeId);
 }

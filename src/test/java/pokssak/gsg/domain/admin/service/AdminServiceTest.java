@@ -11,18 +11,23 @@ import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.admin.entity.Admin;
 import pokssak.gsg.domain.admin.exception.AdminErrorCode;
 import pokssak.gsg.domain.admin.repository.AdminRepository;
+import pokssak.gsg.domain.cafe.dto.KeywordDto;
+import pokssak.gsg.domain.cafe.dto.MenuDto;
 import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.entity.Suggestion.NewCafeData;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.exception.SuggestionErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
+import pokssak.gsg.domain.cafe.repository.KeywordRepository;
 import pokssak.gsg.domain.cafe.repository.SuggestionRedisRepository;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -40,19 +45,34 @@ class AdminServiceTest {
     @Mock
     private AdminRepository adminRepository;
 
+    @Mock
+    private KeywordRepository keywordRepository;
+
     @InjectMocks
     private AdminService adminService;
 
     @Test
     @DisplayName("제안수락 - 성공")
     void acceptSuggestion_success() {
-        // given
         Long suggestionId = 1L;
         Long adminId = 999L;
         Long cafeId = 100L;
 
-        NewCafeData newData = NewCafeData.builder()
+        Suggestion.NewCafeData newData = Suggestion.NewCafeData.builder()
                 .title("Updated Title")
+                .menuList(Set.of(
+                        MenuDto.builder()
+                                .name("아메리카노")
+                                .price(3000)
+                                .modifier("ICE")
+                                .menuImageUrl("url")
+                                .build()
+                ))
+                .keywordList(Set.of(
+                        KeywordDto.builder()
+                                .id(1L)
+                                .build()
+                ))
                 .build();
 
         Suggestion suggestion = Suggestion.builder()
@@ -67,15 +87,16 @@ class AdminServiceTest {
         when(suggestionRedisRepository.findById(suggestionId)).thenReturn(Optional.of(suggestion));
         when(cafeRepository.findByIdWithMenusAndKeywords(cafeId)).thenReturn(Optional.of(cafe));
         when(adminRepository.findById(adminId)).thenReturn(Optional.of(admin));
+        when(keywordRepository.findById(1L)).thenReturn(Optional.of(CafeKeyword.builder().id(1L).build()));
 
-        // when
         adminService.acceptSuggestion(suggestionId, adminId);
 
-        // then
         verify(suggestionRedisRepository).findById(suggestionId);
         verify(cafeRepository).findByIdWithMenusAndKeywords(cafeId);
         verify(adminRepository).findById(adminId);
-        verify(cafe).updateFromSuggestion(newData);
+        verify(keywordRepository).findById(1L);
+
+        verify(cafe).updateFromSuggestion(eq(newData), anySet(), anySet());
         verify(cafeRepository).save(cafe);
         verify(suggestionRedisRepository).deleteById(suggestionId);
     }

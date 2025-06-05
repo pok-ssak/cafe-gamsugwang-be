@@ -21,8 +21,6 @@ import pokssak.gsg.domain.user.entity.User;
 import java.math.BigDecimal;
 import java.util.HashSet;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -79,7 +77,7 @@ class CafeControllerTest {
                 .lon(new BigDecimal("126.9780"))
                 .phoneNumber("010-1234-5678")
                 .menuList(new HashSet<>())
-                .keywordList(new HashSet<>())
+                .cafeKeywordList(new HashSet<>())
                 .build();
 
         // when // then

@@ -102,7 +102,7 @@ public class UserService{
         //키워드 수정
         userKeywordService.updateUserKeywords(userId, userUpdateRequest.keywords());
 
-        //프로필 수정
+        //닉네임 수정
         user.updateProfile(userUpdateRequest);
     }
 

@@ -134,11 +134,11 @@ public class CafeService {
                 .map(m -> new MenuDto(m.getName(), m.getMenuImageUrl(), m.getPrice(), m.getModifier()))
                 .collect(Collectors.toSet());
 
-        Set<KeywordDto> keywordDtos = request.getKeywordList().stream()
+        Set<KeywordDto> keywordDtos = request.getCafeKeywordList().stream()
                 .map(k -> {
-                    Keyword keyword = keywordRepository.findById(k.getId())
+                    CafeKeyword cafeKeyword = keywordRepository.findById(k.getId())
                             .orElseThrow(() -> new CustomException(CafeErrorCode.KEYWORD_NOT_FOUND));
-                    return new KeywordDto(keyword.getId(), keyword.getKeyword(), keyword.getCount());
+                    return new KeywordDto(cafeKeyword.getId(), cafeKeyword.getKeyword(), cafeKeyword.getCount());
                 })
                 .collect(Collectors.toSet());
 

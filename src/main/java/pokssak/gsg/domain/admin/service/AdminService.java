@@ -11,7 +11,7 @@ import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.admin.exception.AdminErrorCode;
 import pokssak.gsg.domain.admin.repository.AdminRepository;
 import pokssak.gsg.domain.cafe.entity.Cafe;
-import pokssak.gsg.domain.cafe.entity.Keyword;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 import pokssak.gsg.domain.cafe.entity.Menu;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
@@ -57,13 +57,13 @@ public class AdminService {
                 .collect(Collectors.toSet());
 
         // 키워드 엔티티 조회 및 연결
-        Set<Keyword> keywords = newCafe.getKeywordList().stream()
+        Set<CafeKeyword> cafeKeywords = newCafe.getKeywordList().stream()
                 .map(k -> keywordRepository.findById(k.getId())
                         .orElseThrow(() -> new CustomException(CafeErrorCode.KEYWORD_NOT_FOUND)))
                 .collect(Collectors.toSet());
 
         // 업데이트 통합 처리
-        cafe.updateFromSuggestion(newCafe, keywords, menus);
+        cafe.updateFromSuggestion(newCafe, cafeKeywords, menus);
 
         cafeRepository.save(cafe);
         suggestionRedisRepository.deleteById(suggestionId);

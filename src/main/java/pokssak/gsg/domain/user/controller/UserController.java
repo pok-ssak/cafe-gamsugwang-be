@@ -21,7 +21,6 @@ import pokssak.gsg.domain.user.service.UserService;
 public class UserController {
 
     private final UserService userService;
-    private final S3Uploader s3Uploader;
 
     // 회원탈퇴 (soft delete)
     @DeleteMapping("/users")

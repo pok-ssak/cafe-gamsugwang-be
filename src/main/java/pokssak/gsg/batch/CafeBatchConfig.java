@@ -89,7 +89,7 @@ public class CafeBatchConfig {
                                     .image(m.getMenuImageUrl())
                                     .build())
                             .collect(Collectors.toList()))
-                    .keywords(cafe.getKeywordList().stream()
+                    .keywords(cafe.getCafeKeywordList().stream()
                             .map(k -> CafeDocument.Keyword.builder()
                                     .key(k.getKeyword())
                                     .count(k.getCount())

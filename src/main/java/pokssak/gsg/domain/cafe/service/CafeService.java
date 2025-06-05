@@ -133,7 +133,7 @@ public class CafeService {
         Suggestion suggestion = Suggestion.builder()
                 .userId(id)
                 .oldCafeId(cafeId)
-                .newCafe(Suggestion.newCafeData.builder()
+                .newCafe(Suggestion.NewCafeData.builder()
                         .title(newCafe.getTitle())
                         .info(newCafe.getInfo())
                         .openTime(newCafe.getOpenTime())

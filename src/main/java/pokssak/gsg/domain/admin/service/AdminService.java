@@ -8,20 +8,20 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
-import pokssak.gsg.domain.admin.entity.Admin;
 import pokssak.gsg.domain.admin.exception.AdminErrorCode;
 import pokssak.gsg.domain.admin.repository.AdminRepository;
 import pokssak.gsg.domain.cafe.entity.Cafe;
+import pokssak.gsg.domain.cafe.entity.Keyword;
+import pokssak.gsg.domain.cafe.entity.Menu;
 import pokssak.gsg.domain.cafe.entity.Suggestion;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.exception.SuggestionErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
+import pokssak.gsg.domain.cafe.repository.KeywordRepository;
 import pokssak.gsg.domain.cafe.repository.SuggestionRedisRepository;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -31,6 +31,7 @@ public class AdminService {
     private final CafeRepository cafeRepository;
     private final SuggestionRedisRepository suggestionRedisRepository;
     private final AdminRepository adminRepository;
+    private final KeywordRepository keywordRepository;
 
     @Transactional
     public void acceptSuggestion(Long suggestionId, Long adminId) {
@@ -43,7 +44,26 @@ public class AdminService {
         adminRepository.findById(adminId)
                         .orElseThrow(() -> new CustomException(AdminErrorCode.NOT_FOUND));
 
-        cafe.updateFromSuggestion(suggestion.getNewCafe());
+        Suggestion.NewCafeData newCafe = suggestion.getNewCafe();
+
+        // 메뉴 엔티티 변환
+        Set<Menu> menus = newCafe.getMenuList().stream()
+                .map(menuData -> Menu.builder()
+                        .name(menuData.getName())
+                        .menuImageUrl(menuData.getMenuImageUrl())
+                        .price(menuData.getPrice())
+                        .modifier(menuData.getModifier())
+                        .build())
+                .collect(Collectors.toSet());
+
+        // 키워드 엔티티 조회 및 연결
+        Set<Keyword> keywords = newCafe.getKeywordList().stream()
+                .map(k -> keywordRepository.findById(k.getId())
+                        .orElseThrow(() -> new CustomException(CafeErrorCode.KEYWORD_NOT_FOUND)))
+                .collect(Collectors.toSet());
+
+        // 업데이트 통합 처리
+        cafe.updateFromSuggestion(newCafe, keywords, menus);
 
         cafeRepository.save(cafe);
         suggestionRedisRepository.deleteById(suggestionId);

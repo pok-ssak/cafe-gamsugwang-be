@@ -23,6 +23,9 @@ public class CafeKeyword extends BaseEntity {
     @ManyToOne
     private Cafe cafe;
 
+    @Column(columnDefinition = "json")
+    private String vectors;
+
     public void updateCafe(Cafe cafe) {
         this.cafe = cafe;
         if (!cafe.getCafeKeywordList().contains(this)) {

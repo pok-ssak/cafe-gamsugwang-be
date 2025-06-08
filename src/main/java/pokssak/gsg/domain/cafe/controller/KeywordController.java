@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.domain.cafe.service.KeywordService;
 
-@Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/keywords")
 @RestController
@@ -17,7 +16,6 @@ public class KeywordController {
 
     @PostMapping("/run")
     public ResponseEntity<?> keywordEmbedding() {
-        log.info("test");
         keywordService.syncDataToES();
         return ResponseEntity.ok(null);
     }
@@ -25,9 +23,8 @@ public class KeywordController {
     @GetMapping()
     public ResponseEntity<?> getSimilarKeywords(
             @RequestParam("query") String query,
-            @RequestParam(value = "size", required = false, defaultValue = "10") int size
+            @RequestParam(value = "size", required = false, defaultValue = "15") int size
     ) {
-        log.info("test");
         return ResponseEntity.ok(keywordService.getSimilarKeywords(query, size));
     }
 

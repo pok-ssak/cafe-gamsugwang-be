@@ -1,7 +1,6 @@
 package pokssak.gsg.domain.cafe.service;
 
 import co.elastic.clients.elasticsearch._types.query_dsl.Operator;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.FieldCollapse;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -14,13 +13,14 @@ import org.springframework.data.elasticsearch.client.elc.NativeQuery;
 import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.data.elasticsearch.core.query.FetchSourceFilter;
-import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pokssak.gsg.domain.cafe.entity.Keyword;
+import pokssak.gsg.common.exception.CustomException;
+import pokssak.gsg.domain.cafe.entity.CafeKeyword;
 import pokssak.gsg.domain.cafe.entity.KeywordDocument;
+import pokssak.gsg.domain.cafe.exception.KeywordErrorCode;
 import pokssak.gsg.domain.cafe.repository.KeywordESRepository;
 import pokssak.gsg.domain.cafe.repository.KeywordRepository;
 
@@ -39,39 +39,53 @@ public class KeywordService {
 
     private static final int BATCH_SIZE = 1000;
 
-    @Scheduled(cron = "0 0 * * * *") // 매시 정각
-    public void syncDataToES() {
-        log.info("Elasticsearch 동기화 시작");
+//    @Scheduled(cron = "0 0 * * * *") // 매시 정각
+public void syncDataToES() {
+    log.info("Elasticsearch 동기화 시작");
 
-        int page = 0;
-        Page<Keyword> pageData;
+    int page = 0;
+    Page<CafeKeyword> pageData;
 
-        do {
-            pageData = keywordRepository.findAll(PageRequest.of(page++, BATCH_SIZE));
-            List<KeywordDocument> documents = pageData.getContent().stream()
-                    .map(entity -> {
-                        List<Float> vector = new ArrayList<>();
-                        try {
-                            vector = objectMapper.readValue(entity.getVectors(),new TypeReference<List<Float>>() {});
-                        } catch (JsonProcessingException e) {
-                            log.error("Keyword ID {} 벡터 파싱 실패: {}", entity.getId(), e.getMessage());
-                        }
+    do {
+        // RDB에서 데이터 가져오기
+        pageData = keywordRepository.findAll(PageRequest.of(page++, BATCH_SIZE));
 
-                        return KeywordDocument.builder()
-                                .id(entity.getId())
-                                .keyword(entity.getKeyword())
-                                .keywordVector(vector)
-                                .createdAt(entity.getCreatedAt())
-                                .modifiedAt(entity.getModifiedAt())
-                                .build();
-                    })
-                    .toList();
+        if (pageData.isEmpty()) {
+            log.info("더 이상 동기화할 데이터가 없습니다.");
+            break;
+        }
 
-            keywordESRepository.saveAll(documents);
-        } while (!pageData.isLast());
+        Set<String> keywordSet = new HashSet<>(); // 중복 확인용 Set
 
-        log.info("동기화 완료");
-    }
+        List<KeywordDocument> documents = pageData.getContent().stream()
+                .filter(entity -> keywordSet.add(entity.getKeyword())) // 중복된 keyword는 자동 제거됨
+                .map(entity -> {
+                    List<Float> vector = new ArrayList<>();
+                    try {
+                        vector = objectMapper.readValue(entity.getVectors(), new TypeReference<List<Float>>() {});
+                    } catch (JsonProcessingException e) {
+                        log.error("Keyword ID {} 벡터 파싱 실패: {}", entity.getId(), e.getMessage());
+                    }
+
+                    return KeywordDocument.builder()
+                            .id(entity.getId()) // keyword를 ID로 사용하여 중복 방지
+                            .keyword(entity.getKeyword())
+                            .keywordVector(vector)
+                            .createdAt(entity.getCreatedAt())
+                            .modifiedAt(entity.getModifiedAt())
+                            .build();
+                })
+                .toList();
+
+        if (!documents.isEmpty()) {
+            keywordESRepository.saveAll(documents); // 중복 제거된 데이터 저장
+            log.info("페이지 {} 동기화 완료 ({}개 저장)", page - 1, documents.size());
+        }
+
+    } while (!pageData.isLast());
+
+    log.info("Elasticsearch 동기화 완료");
+}
 
     @Transactional(readOnly = true)
     public List<String> getSimilarKeywords(String query, int size) {
@@ -87,7 +101,7 @@ public class KeywordService {
         SearchHits<KeywordDocument> matchHits = operations.search(matchQuery, KeywordDocument.class);
 
         if (matchHits.isEmpty()) {
-            throw new NoSuchElementException("해당 키워드가 ES에 존재하지 않습니다: " + query);
+            throw new CustomException(KeywordErrorCode.KEYWORD_NOT_FOUND);
         }
 
         List<Float> queryVector = matchHits.getSearchHit(0).getContent().getKeywordVector();
@@ -98,7 +112,7 @@ public class KeywordService {
                         .field("keywordVector")
                         .queryVector(queryVector)
                         .k(size + 5)           // 중복 제거 고려해 좀 더 많이 요청
-                        .numCandidates(1000))
+                        .numCandidates(5000))
                 .withPageable(PageRequest.of(0, size + 5))
                 .withSourceFilter(new FetchSourceFilter(new String[]{"keyword", "keywordVector"}, null))
                 .withFieldCollapse(FieldCollapse.of(fc -> fc.field("keyword"))) // 중복 키워드 묶기
@@ -109,7 +123,7 @@ public class KeywordService {
         return knnHits.stream()
                 .map(hit -> hit.getContent().getKeyword())
                 .filter(k -> !k.equals(query)) // 자기 자신 제외
-                .distinct()                      // 혹시 모를 중복 제거
+//                .distinct()                      // 혹시 모를 중복 제거
                 .limit(size)
                 .toList();
     }

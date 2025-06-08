@@ -37,6 +37,7 @@ public class SecurityConfig {
         "/api/v1/auth/oauth/naver",
         "/api/v1/auth/oauth/google",
         "/api/v1/cafes/**",
+        "/api/v2/cafes/**",
         "/api/v1/keywords/**",
         "/batch/**",
         "/swagger-ui/**",

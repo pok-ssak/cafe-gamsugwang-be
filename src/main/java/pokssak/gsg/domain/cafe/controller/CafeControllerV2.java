@@ -11,8 +11,10 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import pokssak.gsg.common.dto.ApiResponse;
 import pokssak.gsg.domain.cafe.dto.*;
+import pokssak.gsg.domain.cafe.entity.SearchLog;
 import pokssak.gsg.domain.cafe.service.CafeService;
 import pokssak.gsg.domain.cafe.service.CafeServiceV2;
+import pokssak.gsg.domain.cafe.service.SearchLogESClient;
 import pokssak.gsg.domain.review.service.ReviewService;
 import pokssak.gsg.domain.user.entity.User;
 
@@ -24,6 +26,7 @@ import java.util.List;
 @RequestMapping("/api/v2/cafes")
 public class CafeControllerV2 {
     private final CafeServiceV2 cafeService;
+    private final SearchLogESClient searchLogESClient;
     private final ReviewService reviewService;
     private final EmbeddingModel embeddingModel;
 
@@ -70,7 +73,13 @@ public class CafeControllerV2 {
         log.info("search query: {}, limit: {}", query, pageable.getPageSize());
         Page<SearchCafeResponse> searchCafeResponses = cafeService.searchCafes(query, pageable);
         return ResponseEntity.ok(ApiResponse.ok(searchCafeResponses));
+    }
 
+    @GetMapping("/top-searches")
+    public ResponseEntity<?> getTopSearches(@RequestParam(defaultValue = "10") int topN) {
+        log.info("top searches: {}", topN);
+        List<String> topSearches = searchLogESClient.getTopSearches(topN);
+        return ResponseEntity.ok(ApiResponse.ok(topSearches));
     }
 
     @GetMapping("/recommend")

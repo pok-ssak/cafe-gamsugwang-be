@@ -12,9 +12,7 @@ import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
 import pokssak.gsg.domain.bookmark.service.BookmarkService;
 import pokssak.gsg.domain.cafe.dto.*;
-import pokssak.gsg.domain.cafe.entity.Cafe;
-import pokssak.gsg.domain.cafe.entity.CafeKeyword;
-import pokssak.gsg.domain.cafe.entity.Suggestion;
+import pokssak.gsg.domain.cafe.entity.*;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
@@ -25,6 +23,7 @@ import pokssak.gsg.domain.user.entity.User;
 import pokssak.gsg.domain.user.service.UserKeywordService;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -35,12 +34,12 @@ import java.util.stream.Collectors;
 @Transactional(readOnly = true)
 public class CafeServiceV2 {
     private final CafeESClient cafeESClient;
-    private final CafeESRepository cafeESRepository;
     private final CafeRepository cafeRepository;
     private final SuggestionRedisRepository suggestionRedisRepository;
     private final KeywordRepository keywordRepository;
     private final UserKeywordService userKeywordService;
     private final BookmarkService bookmarkService;
+    private final SearchLogRepository logRepository;
 
     public Cafe getCafeById(Long cafeId) {
         return cafeRepository.findById(cafeId)
@@ -170,7 +169,12 @@ public class CafeServiceV2 {
 //        if (cafes.isEmpty()) {
 //            throw new CustomException(CafeErrorCode.CAFE_NOT_FOUND);
 //        }
-        log.info("search results: {}", cafes);
+        SearchLog log = SearchLog.builder()
+                .query(query)
+                .type("title")
+                .timestamp(new Date())
+                .build();
+        logRepository.save(log);
         return cafes;
     }
 

@@ -215,7 +215,7 @@ class CafeServiceTest {
                 .title("테스트 카페")
                 .build();
 
-        Mockito.when(cafeRepository.findByIdWithMenusAndKeywords(cafeId))
+        Mockito.when(cafeRepository.findByIdWithMenusAndCafeKeywords(cafeId))
                 .thenReturn(Optional.of(cafe));
 
 
@@ -234,7 +234,7 @@ class CafeServiceTest {
         // given
         Long cafeId = 999L;
 
-        Mockito.when(cafeRepository.findByIdWithMenusAndKeywords(Mockito.eq(cafeId)))
+        Mockito.when(cafeRepository.findByIdWithMenusAndCafeKeywords(Mockito.eq(cafeId)))
                 .thenReturn(java.util.Optional.empty());
 
         // when & then
@@ -279,7 +279,7 @@ class CafeServiceTest {
                 .title("기존 카페")
                 .build();
 
-        Mockito.when(cafeRepository.findByIdWithMenusAndKeywords(Mockito.eq(cafeId)))
+        Mockito.when(cafeRepository.findByIdWithMenusAndCafeKeywords(Mockito.eq(cafeId)))
                 .thenReturn(Optional.of(oldCafe));
 
         Mockito.when(keywordRepository.findById(1L))

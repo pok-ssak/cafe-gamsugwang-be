@@ -3,12 +3,15 @@ package pokssak.gsg.domain.review.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
 import pokssak.gsg.domain.feed.dto.FeedRequest;
 import pokssak.gsg.domain.feed.entity.FeedType;
 import pokssak.gsg.domain.feed.service.FeedService;
+import pokssak.gsg.domain.review.entity.Review;
 import pokssak.gsg.domain.review.entity.ReviewLike;
 import pokssak.gsg.domain.review.exception.ReviewErrorCode;
 import pokssak.gsg.domain.review.repository.ReviewLikeRepository;
@@ -19,6 +22,7 @@ import pokssak.gsg.domain.user.repository.UserRepository;
 @Slf4j
 @RequiredArgsConstructor
 @Service
+@EnableAsync
 public class ReviewLikeService {
 
     private final ReviewLikeRepository reviewLikeRepository;
@@ -38,13 +42,14 @@ public class ReviewLikeService {
                 .orElseThrow(() -> new CustomException(ReviewErrorCode.NOT_FOUND));
 
         var existingLike = reviewLikeRepository.findByUserIdAndReviewId(user.getId(), reviewId);
-        String likeCountKey = LIKE_COUNT_KEY_PREFIX + reviewId;
+//        String likeCountKey = LIKE_COUNT_KEY_PREFIX + reviewId;
 
         if (existingLike.isPresent()) {
             // 좋아요 취소
             reviewLikeRepository.delete(existingLike.get());
-            redisTemplate.opsForValue().decrement(likeCountKey);
-            review.updateLikeCount(Math.max(0, review.getLikeCount() - 1));
+//            redisTemplate.opsForValue().decrement(likeCountKey);
+//            review.updateLikeCount(Math.max(0, review.getLikeCount() - 1));
+            asyncUpdate(review, -1L);
             log.info("리뷰 좋아요 취소 userId={} reviewId={}", user.getId(), reviewId);
             return review.getLikeCount();
         } else {
@@ -54,12 +59,20 @@ public class ReviewLikeService {
                     .review(review)
                     .build();
             reviewLikeRepository.save(reviewLike);
-            redisTemplate.opsForValue().increment(likeCountKey);
-            review.updateLikeCount(review.getLikeCount() + 1);
+//            redisTemplate.opsForValue().increment(likeCountKey);
+//            review.updateLikeCount(review.getLikeCount() + 1);
             handleLikeOnReview(reviewId);
+            asyncUpdate(review, 1L);
             log.info("리뷰 좋아요 userId={} reviewId={}", user.getId(), reviewId);
             return review.getLikeCount();
         }
+    }
+
+
+    @Async
+    @Transactional
+    public void asyncUpdate(Review review, Long delta){
+        review.updateLikeCount(Math.max(0, review.getLikeCount() + delta)); // -1인 경우
     }
 
     public void handleLikeOnReview(Long reviewId) {
@@ -77,5 +90,6 @@ public class ReviewLikeService {
 
         feedService.createFeed(feedRequest);
     }
+
 
 }

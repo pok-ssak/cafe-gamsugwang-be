@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -38,6 +39,7 @@ public class CafeController {
 
         Long userId = getUserId(user);
         GetCafeResponse cafe = cafeService.getCafe(userId, cafeId);
+//        var keyword = cafe.getKeywordList().stream().map(KeywordResponse::keyword).toList();
         return ResponseEntity.ok(ApiResponse.ok(cafe));
     }
 
@@ -123,6 +125,14 @@ public class CafeController {
     ) {
         var result = reviewService.getReviews(cafeId, user, pageable);
         return ResponseEntity.ok(ApiResponse.ok(result));
+    }
+
+    @GetMapping("/{cafeId}/menus")
+    public ResponseEntity<?> getCafeMenu(
+            @PathVariable Long cafeId
+    ) {
+        List<MenuResponse> menu = cafeService.getCafeMenu(cafeId);
+        return ResponseEntity.ok(ApiResponse.ok(menu));
     }
 
     @GetMapping

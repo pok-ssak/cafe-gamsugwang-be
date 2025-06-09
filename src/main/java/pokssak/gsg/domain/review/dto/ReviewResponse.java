@@ -9,6 +9,7 @@ public record ReviewResponse(
         String content,
         String nickname,
         String imageUrl,
+        String profileImageUrl,
         float rating,
         boolean likedByUser,
         long likeCount
@@ -20,6 +21,7 @@ public record ReviewResponse(
                 .content(review.getContent())
                 .nickname(review.getUser().getNickName())
                 .imageUrl(review.getImageUrl())
+                .profileImageUrl(review.getUser().getImageUrl())
                 .rating(review.getRating())
                 .likedByUser(likedByUser) // 엔티티에서 직접 가져오는 값이 아님.
                 .likeCount(review.getLikeCount())

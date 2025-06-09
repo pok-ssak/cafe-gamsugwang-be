@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.embedding.EmbeddingModel;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pokssak.gsg.common.exception.CustomException;
@@ -80,5 +81,21 @@ public class UserKeywordService {
                         .build())
                 .toList();
         userKeywordRepository.saveAll(toAdd);
+    }
+
+    private final EmbeddingModel embeddingModel;
+
+    @Transactional
+    public List<UserKeywordResponse> getRecommendKeywords(Long id, String keyword) {
+
+        embeddingModel.embedForResponse(List.of(keyword));
+        return null;
+    }
+
+    @Transactional
+    public Double getEmbedding(String keyword) {
+
+
+        return null;
     }
 }

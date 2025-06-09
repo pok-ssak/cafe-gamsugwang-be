@@ -16,6 +16,7 @@ import pokssak.gsg.domain.cafe.entity.*;
 import pokssak.gsg.domain.cafe.exception.CafeErrorCode;
 import pokssak.gsg.domain.cafe.repository.CafeESRepository;
 import pokssak.gsg.domain.cafe.repository.CafeRepository;
+import pokssak.gsg.domain.cafe.repository.MenuRepository;
 import pokssak.gsg.domain.cafe.repository.KeywordRepository;
 import pokssak.gsg.domain.cafe.repository.SuggestionRedisRepository;
 import pokssak.gsg.domain.user.dto.UserKeywordResponse;
@@ -196,6 +197,12 @@ public class CafeService {
             log.info("User is not authenticated, using default keywords.");
             return cafeESClient.recommendByHybrid(keywords, lat, lon, limit);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuResponse> getCafeMenu(Long cafeId) {
+        var cafe = this.getCafeById(cafeId);
+        return cafe.getMenuList().stream().map(MenuResponse::from).toList();
     }
 }
 

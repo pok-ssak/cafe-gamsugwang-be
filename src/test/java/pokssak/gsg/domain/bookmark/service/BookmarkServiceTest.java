@@ -176,8 +176,8 @@ class BookmarkServiceTest {
         List<BookmarkResponse> responses = bookmarkService.getUserBookmarks(userId);
 
         assertThat(responses).hasSize(2);
-        assertThat(responses.get(0).cafeName()).isEqualTo("카페1");
-        assertThat(responses.get(1).cafeId()).isEqualTo(20L);
+        assertThat(responses.get(0).title()).isEqualTo("카페1");
+        assertThat(responses.get(1).id()).isEqualTo(20L);
     }
 
     @Test

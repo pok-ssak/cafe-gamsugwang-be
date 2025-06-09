@@ -30,6 +30,7 @@ public class UserService{
 
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
+    private final BookmarkRepository bookmarkRepository;
     private final BookmarkService bookmarkService;
     private final PasswordEncoder encoder;
     private final UserKeywordService userKeywordService;
@@ -133,7 +134,7 @@ public class UserService{
                 .map(review -> ReviewResponse.from(review,false)).toList();
     }
 
-    private final BookmarkRepository bookmarkRepository;
+
     /** 내 북마크 조회 */
     @Transactional(readOnly = true)
     public List<BookmarkResponse> getMyBookmarks(Long userId) {

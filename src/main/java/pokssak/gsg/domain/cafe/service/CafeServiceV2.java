@@ -81,7 +81,7 @@ public class CafeServiceV2 {
         List<BookmarkResponse> userBookmarks = bookmarkService.getUserBookmarks(userId);
         return cafeDocuments.stream()
                 .peek(cafe -> cafe.setIsBookmarked(userBookmarks.stream()
-                        .anyMatch(bookmark -> bookmark.cafeId().equals(cafe.getId()))))
+                        .anyMatch(bookmark -> bookmark.id().equals(cafe.getId()))))
                 .toList();
     }
 
@@ -116,7 +116,7 @@ public class CafeServiceV2 {
         }
         List<BookmarkResponse> userBookmarks = bookmarkService.getUserBookmarks(userId);
         return GetCafeResponse.from(cafe, userBookmarks.stream()
-                .anyMatch(bookmark -> bookmark.cafeId().equals(cafe.getId())));
+                .anyMatch(bookmark -> bookmark.id().equals(cafe.getId())));
 
     }
 
@@ -194,7 +194,7 @@ public class CafeServiceV2 {
             // 북마크 여부 추가
             return recommendResponses.map(cafe -> {
                 cafe.setIsBookmarked(userBookmarks.stream()
-                        .anyMatch(bookmark -> bookmark.cafeId().equals(cafe.getId())));
+                        .anyMatch(bookmark -> bookmark.id().equals(cafe.getId())));
                 return cafe;
             });
 //            return recommendResponses.stream()

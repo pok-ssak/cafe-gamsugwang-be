@@ -62,8 +62,8 @@ class BookmarkControllerTest {
     @DisplayName("getBookmarks-성공")
     void getBookmarks_success() {
         List<BookmarkResponse> mockResponses = List.of(
-                new BookmarkResponse(1L, "Cafe A"),
-                new BookmarkResponse(2L, "Cafe B")
+                BookmarkResponse.builder().id(1L).title("A").build(),
+                BookmarkResponse.builder().id(1L).title("B").build()
         );
 
         when(bookmarkService.getUserBookmarks(mockUser.getId())).thenReturn(mockResponses);

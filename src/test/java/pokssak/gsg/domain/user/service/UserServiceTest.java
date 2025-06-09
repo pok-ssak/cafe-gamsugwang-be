@@ -330,6 +330,6 @@ class UserServiceTest {
 
         // then
         assertThat(result.size()).isEqualTo(1);
-        assertThat(result.get(0).cafeId()).isEqualTo(1L);
+        assertThat(result.get(0).id()).isEqualTo(1L);
     }
 }

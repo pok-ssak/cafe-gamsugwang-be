@@ -52,7 +52,7 @@ public class CafeBatchConfig {
         return new JpaCursorItemReaderBuilder<Cafe>()
                 .name("cafeReader")
                 .entityManagerFactory(emf)
-                .queryString("SELECT DISTINCT c FROM Cafe c LEFT JOIN FETCH c.menuList LEFT JOIN FETCH c.keywordList")
+                .queryString("SELECT DISTINCT c FROM Cafe c LEFT JOIN FETCH c.menuList LEFT JOIN FETCH c.cafeKeywordList")
                 .build();
     }
 

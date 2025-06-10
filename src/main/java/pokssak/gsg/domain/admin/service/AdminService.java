@@ -38,7 +38,7 @@ public class AdminService {
         Suggestion suggestion = suggestionRedisRepository.findById(suggestionId)
                 .orElseThrow(() -> new CustomException(SuggestionErrorCode.SUGGESTION_NOT_FOUND));
 
-        Cafe cafe = cafeRepository.findByIdWithMenusAndKeywords(suggestion.getOldCafeId())
+        Cafe cafe = cafeRepository.findByIdWithMenusAndCafeKeywords(suggestion.getOldCafeId())
                 .orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
 
         adminRepository.findById(adminId)

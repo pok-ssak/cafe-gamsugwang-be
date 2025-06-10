@@ -110,7 +110,7 @@ public class CafeServiceV2 {
 
     public GetCafeResponse getCafe(Long userId, Long cafeId) {
         log.info("cafeId: {}", cafeId);
-        Cafe cafe = cafeRepository.findByIdWithMenusAndKeywords(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
+        Cafe cafe = cafeRepository.findByIdWithMenusAndCafeKeywords(cafeId).orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
         if (userId == null) {
             return GetCafeResponse.from(cafe);
         }
@@ -128,7 +128,7 @@ public class CafeServiceV2 {
 
     public void suggestCafe(Long id, Long cafeId, SuggestRequest request) {
         log.info("id: {}, cafeId: {}, suggestion: {}", id, cafeId, request);
-        cafeRepository.findByIdWithMenusAndKeywords(cafeId)
+        cafeRepository.findByIdWithMenusAndCafeKeywords(cafeId)
                 .orElseThrow(() -> new CustomException(CafeErrorCode.CAFE_NOT_FOUND));
 
         Set<MenuDto> menuDtos = request.getMenuList().stream()

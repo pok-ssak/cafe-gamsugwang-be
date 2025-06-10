@@ -85,14 +85,14 @@ class AdminServiceTest {
         Admin admin = new Admin();
 
         when(suggestionRedisRepository.findById(suggestionId)).thenReturn(Optional.of(suggestion));
-        when(cafeRepository.findByIdWithMenusAndKeywords(cafeId)).thenReturn(Optional.of(cafe));
+        when(cafeRepository.findByIdWithMenusAndCafeKeywords(cafeId)).thenReturn(Optional.of(cafe));
         when(adminRepository.findById(adminId)).thenReturn(Optional.of(admin));
         when(keywordRepository.findById(1L)).thenReturn(Optional.of(CafeKeyword.builder().id(1L).build()));
 
         adminService.acceptSuggestion(suggestionId, adminId);
 
         verify(suggestionRedisRepository).findById(suggestionId);
-        verify(cafeRepository).findByIdWithMenusAndKeywords(cafeId);
+        verify(cafeRepository).findByIdWithMenusAndCafeKeywords(cafeId);
         verify(adminRepository).findById(adminId);
         verify(keywordRepository).findById(1L);
 
@@ -136,7 +136,7 @@ class AdminServiceTest {
                 .build();
 
         when(suggestionRedisRepository.findById(suggestionId)).thenReturn(Optional.of(suggestion));
-        when(cafeRepository.findByIdWithMenusAndKeywords(cafeId)).thenReturn(Optional.empty());
+        when(cafeRepository.findByIdWithMenusAndCafeKeywords(cafeId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> adminService.acceptSuggestion(suggestionId, adminId))
                 .isInstanceOf(CustomException.class)
@@ -146,7 +146,7 @@ class AdminServiceTest {
                 });
 
         verify(suggestionRedisRepository).findById(suggestionId);
-        verify(cafeRepository).findByIdWithMenusAndKeywords(cafeId);
+        verify(cafeRepository).findByIdWithMenusAndCafeKeywords(cafeId);
     }
 
     @Test
@@ -167,7 +167,7 @@ class AdminServiceTest {
                 .build();
 
         when(suggestionRedisRepository.findById(suggestionId)).thenReturn(Optional.of(suggestion));
-        when(cafeRepository.findByIdWithMenusAndKeywords(cafeId)).thenReturn(Optional.of(mock(Cafe.class)));
+        when(cafeRepository.findByIdWithMenusAndCafeKeywords(cafeId)).thenReturn(Optional.of(mock(Cafe.class)));
         when(adminRepository.findById(adminId)).thenReturn(Optional.empty());  // admin 없음
 
         assertThatThrownBy(() -> adminService.acceptSuggestion(suggestionId, adminId))
@@ -178,7 +178,7 @@ class AdminServiceTest {
                 });
 
         verify(suggestionRedisRepository).findById(suggestionId);
-        verify(cafeRepository).findByIdWithMenusAndKeywords(cafeId);
+        verify(cafeRepository).findByIdWithMenusAndCafeKeywords(cafeId);
         verify(adminRepository).findById(adminId);
     }
 

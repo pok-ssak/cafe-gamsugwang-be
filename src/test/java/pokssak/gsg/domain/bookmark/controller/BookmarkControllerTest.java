@@ -11,6 +11,7 @@ import pokssak.gsg.domain.bookmark.dto.BookmarkResponse;
 import pokssak.gsg.domain.bookmark.service.BookmarkService;
 import pokssak.gsg.domain.user.entity.User;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -62,8 +63,8 @@ class BookmarkControllerTest {
     @DisplayName("getBookmarks-성공")
     void getBookmarks_success() {
         List<BookmarkResponse> mockResponses = List.of(
-                new BookmarkResponse(1L, "Cafe A"),
-                new BookmarkResponse(2L, "Cafe B")
+                new BookmarkResponse(1L, "Cafe A", "제주도", new BigDecimal(4.5), "ImagrUrl"),
+                new BookmarkResponse(2L, "Cafe B", "제주도", new BigDecimal(4.5), "ImagrUrl")
         );
 
         when(bookmarkService.getUserBookmarks(mockUser.getId())).thenReturn(mockResponses);
